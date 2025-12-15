@@ -20,7 +20,28 @@ curl -X POST http://localhost:8080/api/news/ingest ^
   -H "Content-Type: application/json" ^
   -d "{\"title\":\"测试\",\"summary\":\"情绪测试\",\"coin\":\"BTC\",\"sentiment\":\"NEUTRAL\",\"sourceUrl\":\"https://example.com\",\"publishedAt\":\"2024-12-15 12:00\"}"
 ```
-
+新增支持批量添加新闻接口`POST /api/news/ingest/batch`
+- JSON格式请求体：
+```
+[
+  {
+    "title": "BTC跌破88000美元，日内下跌1.19%",
+    "summary": "欧易OKX行情显示，BTC价格跌破88000美元，现报87972.00美元，日内跌幅1.19%。",
+    "coin": "BTC",
+    "sentiment": "BEARISH",
+    "sourceUrl": "https://www.panewslab.com/zh/articles/520nwvrj",
+    "publishedAt": "2025-12-15 22:56"
+  },
+  {
+    "title": "ETH跌破3100美元，日内涨幅0.43%",
+    "summary": "欧易OKX行情显示，ETH价格跌破3100美元，现报3097.80美元，日内涨幅0.43%。",
+    "coin": "ETH",
+    "sentiment": "NEUTRAL",
+    "sourceUrl": "https://www.panewslab.com/zh/articles/crxkjzux",
+    "publishedAt": "2025-12-15 22:49"
+  }
+]
+```
 ## 数据表字段（schema.sql）
 ### news
 - `id` BIGINT PK 自增
