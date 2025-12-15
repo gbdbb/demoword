@@ -1,0 +1,11 @@
+# Compiled class files
+*.class
+
+# Package Files
+*.jar
+*.war
+*.ear
+
+# Maven/Gradle generated directories
+/target/
+/backend/target/ # 确保您的backend模块的target目录也被忽略
