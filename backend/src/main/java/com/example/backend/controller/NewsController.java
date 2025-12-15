@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 
 import jakarta.validation.Valid;
 
+import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -39,6 +40,12 @@ public class NewsController {
     public Map<String, Object> ingest(@Valid @RequestBody NewsIngestRequest request) {
         Long id = newsService.ingestNews(request);
         return Map.of("id", id, "status", "ok");
+    }
+
+    @PostMapping("/ingest/batch")
+    public Map<String, Object> ingestBatch(@Valid @RequestBody List<NewsIngestRequest> requests) {
+        List<Long> ids = newsService.ingestNewsBatch(requests);
+        return Map.of("ids", ids, "count", ids.size(), "status", "ok");
     }
 
     @PostMapping("/{id}/read")

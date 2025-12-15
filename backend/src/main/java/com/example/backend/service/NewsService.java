@@ -87,6 +87,37 @@ public class NewsService {
         return saved.getId();
     }
 
+    public List<Long> ingestNewsBatch(List<NewsIngestRequest> requests) {
+        List<News> newsToSave = new ArrayList<>();
+        
+        for (NewsIngestRequest request : requests) {
+            String normalizedCoin = normalizeCoin(request.getCoin());
+            SentimentType sentiment = parseSentiment(request.getSentiment());
+            LocalDateTime publishedAt = parsePublishedAt(request.getPublishedAt());
+
+            News news = newsRepository.findFirstByTitleAndPublishedAt(request.getTitle(), publishedAt)
+                    .orElseGet(() -> News.builder()
+                            .title(request.getTitle())
+                            .publishedAt(publishedAt)
+                            .build());
+
+            news.setSummary(request.getSummary());
+            news.setCoin(normalizedCoin);
+            news.setSentiment(sentiment);
+            news.setSourceUrl(request.getSourceUrl());
+            if (news.getRead() == null) {
+                news.setRead(false);
+            }
+
+            newsToSave.add(news);
+        }
+
+        List<News> savedNews = newsRepository.saveAll(newsToSave);
+        return savedNews.stream()
+                .map(News::getId)
+                .toList();
+    }
+
     private NewsDto toDto(News news) {
         return NewsDto.builder()
                 .id(news.getId())
