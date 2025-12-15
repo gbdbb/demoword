@@ -1,0 +1,166 @@
+:root {
+  font-family: 'Segoe UI', 'PingFang SC', system-ui, -apple-system, sans-serif;
+  color: #0f172a;
+  background-color: #f1f5f9;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  overflow-x: hidden;
+  background: radial-gradient(circle at 10% 10%, #e0f2fe 0, transparent 25%),
+    radial-gradient(circle at 90% 0%, #fce7f3 0, transparent 20%),
+    #f5f7fb;
+}
+
+#app {
+  min-height: 100vh;
+}
+
+.app-shell {
+  min-height: 100vh;
+  background: transparent;
+}
+
+.app-sider {
+  background: #0b1224;
+  color: #fff;
+  border-right: 1px solid #111827;
+}
+
+.app-sider .ant-menu {
+  background: transparent;
+  border-inline-end: none;
+}
+
+.app-sider .ant-menu-item {
+  color: #e5e7eb;
+}
+
+.app-sider .ant-menu-item-selected {
+  background: linear-gradient(90deg, rgba(22, 119, 255, 0.22), transparent);
+  color: #fff;
+}
+
+.logo-block {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 16px 16px 8px;
+  color: #fff;
+  font-weight: 700;
+  letter-spacing: 0.2px;
+}
+
+.logo-mark {
+  width: 36px;
+  height: 36px;
+  display: grid;
+  place-items: center;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #2563eb, #22d3ee);
+  color: #fff;
+  font-weight: 800;
+}
+
+.logo-text {
+  font-size: 15px;
+}
+
+.app-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 24px;
+  background: rgba(255, 255, 255, 0.92);
+  border-bottom: 1px solid #e2e8f0;
+  backdrop-filter: blur(6px);
+}
+
+.header-title {
+  margin: 0;
+}
+
+.header-subtitle {
+  margin: 2px 0 0;
+  color: #64748b;
+  display: block;
+}
+
+.app-content {
+  margin: 16px;
+  padding: 0;
+  background: transparent;
+}
+
+.page {
+  background: #fff;
+  border-radius: 16px;
+  padding: 16px 16px 20px;
+  box-shadow: 0 10px 30px rgba(15, 23, 42, 0.06);
+  width: 100%;
+  max-width: none;
+  margin: 0;
+}
+
+.page-header {
+  margin-bottom: 16px;
+}
+
+.page-title {
+  margin: 0;
+}
+
+.section {
+  margin-bottom: 16px;
+}
+
+.stat-card,
+.link-card {
+  height: 100%;
+  box-shadow: inset 0 1px 0 #f8fafc, 0 8px 20px rgba(15, 23, 42, 0.05);
+}
+
+.chart-footer {
+  text-align: center;
+  margin-top: 12px;
+  color: #475569;
+}
+
+.report-item {
+  padding: 10px 8px;
+  cursor: pointer;
+  border-radius: 10px;
+  transition: background 0.2s ease;
+}
+
+.report-item:hover {
+  background: #f8fafc;
+}
+
+.report-item.active {
+  background: #eef4ff;
+}
+
+.subtle-text {
+  color: #94a3b8;
+  font-size: 12px;
+}
+
+@media (max-width: 992px) {
+  .app-content {
+    margin: 12px;
+  }
+  .page {
+    padding: 12px;
+  }
+}
