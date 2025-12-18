@@ -6,5 +6,5 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.List;
 
 public interface ReportNewsRepository extends JpaRepository<ReportNews, Long> {
-    List<ReportNews> findByReportId(String reportId);
+    List<ReportNews> findByReportId(Long reportId);
 }

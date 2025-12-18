@@ -38,10 +38,6 @@ public class BatchInsertRequest {
     @Builder
     public static class ReportData {
         
-        @NotBlank(message = "报告ID不能为空")
-        @Pattern(regexp = "^R\\d+$", message = "报告ID格式不正确，应以R开头+数字")
-        private String id;
-        
         @NotBlank(message = "生成时间不能为空")
         @JsonProperty("generated_at")
         private String generatedAt;

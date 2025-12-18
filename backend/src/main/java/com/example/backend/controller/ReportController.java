@@ -32,18 +32,18 @@ public class ReportController {
     }
 
     @GetMapping("/{id}")
-    public ReportDetailDto detail(@PathVariable String id) {
+    public ReportDetailDto detail(@PathVariable Long id) {
         return reportService.getReportDetail(id);
     }
 
     @PostMapping("/{id}/approve")
-    public ResponseEntity<Map<String, String>> approve(@PathVariable String id) {
+    public ResponseEntity<Map<String, String>> approve(@PathVariable Long id) {
         reportService.approve(id);
         return ResponseEntity.ok(Map.of("status", "approved"));
     }
 
     @PostMapping("/{id}/reject")
-    public ResponseEntity<Map<String, String>> reject(@PathVariable String id, @Valid @RequestBody ReviewRequest request) {
+    public ResponseEntity<Map<String, String>> reject(@PathVariable Long id, @Valid @RequestBody ReviewRequest request) {
         reportService.reject(id, request.getReason());
         return ResponseEntity.ok(Map.of("status", "rejected"));
     }
@@ -107,11 +107,10 @@ public class ReportController {
                         .build());
             }
             
-            log.info("报告ID: {}", request.getReport().getId());
             log.info("状态: {}", request.getReport().getStatus());
             log.info("风险等级: {}", request.getReport().getRiskLevel());
             
-            String reportId = reportService.batchInsertReport(request);
+            Long reportId = reportService.batchInsertReport(request);
             log.info("批量插入报告成功，报告ID: {}", reportId);
             BatchInsertResponse.ResponseData data = BatchInsertResponse.ResponseData.builder()
                     .reportId(reportId)

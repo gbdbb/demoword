@@ -39,13 +39,13 @@ public class ReportService {
     private final ReportNewsRepository reportNewsRepository;
     private final NewsRepository newsRepository;
     private final PortfolioHoldingRepository holdingRepository;
-    private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
+    private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
     public List<ReportSummaryDto> listReports() {
         return reportRepository.findAll(Sort.by(Sort.Direction.DESC, "generatedAt"))
                 .stream()
                 .map(report -> ReportSummaryDto.builder()
-                        .id(report.getId())
+                        .id(report.getId() != null ? report.getId().toString() : null)
                         .date(report.getGeneratedAt() != null ? report.getGeneratedAt().format(FORMATTER) : null)
                         .status(report.getStatus() != null ? report.getStatus().name().toLowerCase(Locale.ROOT) : null)
                         .riskLevel(report.getRiskLevel() != null ? report.getRiskLevel().name().toLowerCase(Locale.ROOT) : null)
@@ -54,7 +54,7 @@ public class ReportService {
     }
 
     @Transactional
-    public void approve(String id) {
+    public void approve(Long id) {
         Report report = reportRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "报告不存在: " + id));
         report.setStatus(ReportStatus.APPROVED);
@@ -62,7 +62,7 @@ public class ReportService {
     }
 
     @Transactional
-    public void reject(String id, String reason) {
+    public void reject(Long id, String reason) {
         Report report = reportRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "报告不存在: " + id));
         report.setStatus(ReportStatus.REJECTED);
@@ -71,7 +71,7 @@ public class ReportService {
     }
 
     @Transactional
-    public ReportDetailDto getReportDetail(String id) {
+    public ReportDetailDto getReportDetail(Long id) {
         Report report = reportRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "报告不存在: " + id));
 
@@ -104,7 +104,7 @@ public class ReportService {
                 .toList();
 
         return ReportDetailDto.builder()
-                .id(report.getId())
+                .id(report.getId() != null ? report.getId().toString() : null)
                 .date(report.getGeneratedAt() != null ? report.getGeneratedAt().format(FORMATTER) : null)
                 .status(report.getStatus() != null ? report.getStatus().name().toLowerCase(Locale.ROOT) : null)
                 .riskLevel(report.getRiskLevel() != null ? report.getRiskLevel().name().toLowerCase(Locale.ROOT) : null)
@@ -132,21 +132,16 @@ public class ReportService {
      * 数据库操作模块：执行具体的数据库插入操作
      */
     @Transactional
-    public String batchInsertReport(BatchInsertRequest request) {
+    public Long batchInsertReport(BatchInsertRequest request) {
         // 数据校验模块
-        // 1. 检查report_id是否已存在
-        if (reportRepository.existsById(request.getReport().getId())) {
-            throw new IllegalArgumentException("报告ID已存在: " + request.getReport().getId());
-        }
-
-        // 2. 验证news_id是否都有效
+        // 1. 验证news_id是否都有效
         for (Integer newsId : request.getReportNews()) {
             if (!newsRepository.existsById(newsId.longValue())) {
                 throw new IllegalArgumentException("新闻ID不存在: " + newsId);
             }
         }
 
-        // 3. 验证current_amount是否为0（避免除零错误）
+        // 2. 验证current_amount是否为0（避免除零错误）
         for (BatchInsertRequest.ReportChangeData changeData : request.getReportChanges()) {
             if (changeData.getCurrentAmount().compareTo(BigDecimal.ZERO) == 0) {
                 throw new IllegalArgumentException("币种 " + changeData.getCoin() + " 的当前持仓量不能为0");
@@ -157,11 +152,10 @@ public class ReportService {
         try {
             // 1. 插入report主记录
             Report report = new Report();
-            report.setId(request.getReport().getId());
+            // ID将由数据库自动生成，不再需要手动设置
             
             // 将字符串日期转换为LocalDateTime
-            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-            LocalDateTime generatedAt = LocalDateTime.parse(request.getReport().getGeneratedAt(), formatter);
+            LocalDateTime generatedAt = LocalDateTime.parse(request.getReport().getGeneratedAt(), FORMATTER);
             report.setGeneratedAt(generatedAt);
             
             report.setStatus(ReportStatus.valueOf(request.getReport().getStatus()));

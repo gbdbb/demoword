@@ -26,7 +26,7 @@ CREATE TABLE IF NOT EXISTS portfolio_history (
 );
 
 CREATE TABLE IF NOT EXISTS report (
-    id VARCHAR(20) PRIMARY KEY,
+    id BIGINT PRIMARY KEY AUTO_INCREMENT,
     generated_at DATETIME,
     status VARCHAR(20),
     ai_judgment TEXT,
@@ -36,7 +36,7 @@ CREATE TABLE IF NOT EXISTS report (
 
 CREATE TABLE IF NOT EXISTS report_change (
     id BIGINT PRIMARY KEY AUTO_INCREMENT,
-    report_id VARCHAR(20),
+    report_id BIGINT,
     coin VARCHAR(20),
     current_amount DECIMAL(18,4),
     proposed_amount DECIMAL(18,4),
@@ -47,7 +47,7 @@ CREATE TABLE IF NOT EXISTS report_change (
 
 CREATE TABLE IF NOT EXISTS report_news (
     id BIGINT PRIMARY KEY AUTO_INCREMENT,
-    report_id VARCHAR(20),
+    report_id BIGINT,
     news_id BIGINT,
     CONSTRAINT fk_report_news_report FOREIGN KEY (report_id) REFERENCES report(id),
     CONSTRAINT fk_report_news_news FOREIGN KEY (news_id) REFERENCES news(id)

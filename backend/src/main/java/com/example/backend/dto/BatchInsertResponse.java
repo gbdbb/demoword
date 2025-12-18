@@ -19,6 +19,6 @@ public class BatchInsertResponse {
     @AllArgsConstructor
     @Builder
     public static class ResponseData {
-        private String reportId;
+        private Long reportId;
     }
 }
