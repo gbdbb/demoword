@@ -201,6 +201,60 @@ body {
   transform: translateY(-2px);
 }
 
+/* 所有卡片通用样式 */
+.ant-card {
+  border-radius: 12px;
+  box-shadow: var(--card-shadow);
+  border: none;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  overflow: hidden;
+}
+
+.ant-card:hover {
+  box-shadow: var(--card-hover-shadow);
+}
+
+.ant-card-head {
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+  min-height: auto;
+}
+
+.ant-card-head-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #1e293b;
+  padding: 16px 0;
+}
+
+.ant-card-body {
+  padding: 20px 24px;
+}
+
+/* 特定卡片增强样式 */
+.report-list-card {
+  height: calc(100vh - 200px);
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(0, 0, 0, 0.1) transparent;
+}
+
+.report-list-card::-webkit-scrollbar {
+  width: 6px;
+}
+
+.report-list-card::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.report-list-card::-webkit-scrollbar-thumb {
+  background-color: rgba(0, 0, 0, 0.1);
+  border-radius: 3px;
+}
+
+.report-list-card::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(0, 0, 0, 0.2);
+}
+
 /* 按钮美化 */
 .ant-btn-primary {
   background: var(--primary-color);
@@ -265,17 +319,238 @@ body {
   cursor: pointer;
   border-radius: 12px;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  margin-bottom: 4px;
+  margin-bottom: 8px;
+  border: 1px solid transparent;
 }
 
 .report-item:hover {
-  background: rgba(22, 93, 255, 0.08);
+  background: rgba(22, 93, 255, 0.05);
   transform: translateX(4px);
+  border-color: rgba(22, 93, 255, 0.1);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
 }
 
 .report-item.active {
-  background: linear-gradient(135deg, rgba(22, 93, 255, 0.15), rgba(22, 93, 255, 0.08));
+  background: linear-gradient(135deg, rgba(22, 93, 255, 0.12), rgba(22, 93, 255, 0.06));
   border-left: 3px solid var(--primary-color);
+  border-color: rgba(22, 93, 255, 0.2);
+  box-shadow: 0 4px 12px rgba(22, 93, 255, 0.15);
+}
+
+.report-status-indicator {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.report-status-indicator.pending {
+  background-color: var(--warning-color);
+}
+
+.report-status-indicator.approved {
+  background-color: var(--success-color);
+}
+
+.report-status-indicator.rejected {
+  background-color: var(--danger-color);
+}
+
+.report-id {
+  font-weight: 600;
+}
+
+.report-date {
+  font-size: 12px;
+  margin-top: 4px;
+}
+
+/* 报告卡片样式 */
+.report-list-card .ant-card-head {
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+  background: linear-gradient(90deg, rgba(22, 93, 255, 0.05), transparent);
+}
+
+.report-list-card .ant-card-head-title {
+  font-weight: 600;
+  font-size: 16px;
+}
+
+/* 详情加载卡片 */
+.detail-loading-card {
+  min-height: 300px;
+}
+
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 0;
+}
+
+/* 摘要卡片样式 */
+.summary-card .ant-card-head {
+  background: linear-gradient(90deg, rgba(22, 93, 255, 0.05), transparent);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+.summary-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: 16px;
+}
+
+.summary-label {
+  font-size: 12px;
+  color: var(--secondary-color);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.summary-value {
+  font-size: 15px;
+  font-weight: 500;
+}
+
+.ai-judgment {
+  margin-top: 8px;
+}
+
+.ai-judgment .ant-alert {
+  border-radius: 8px;
+  border-left: 4px solid var(--info-color);
+}
+
+/* 市场消息卡片 */
+.news-card .ant-list-item {
+  padding: 20px 16px;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.news-item:hover {
+  background: rgba(22, 93, 255, 0.03);
+  border-radius: 8px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+}
+
+.news-sentiment-indicator {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.news-sentiment-indicator.bullish {
+  background-color: var(--success-color);
+}
+
+.news-sentiment-indicator.bearish {
+  background-color: var(--danger-color);
+}
+
+.news-sentiment-indicator.neutral {
+  background-color: var(--info-color);
+}
+
+.news-coin-tag {
+  font-weight: 600;
+}
+
+.news-sentiment-tag {
+  font-weight: 500;
+}
+
+.news-source-btn:hover {
+  transform: translateX(2px);
+}
+
+.news-summary {
+  margin-top: 8px;
+  line-height: 1.5;
+}
+
+/* 图表卡片 */
+.chart-card {
+  height: 100%;
+  min-height: 400px;
+}
+
+.chart-card .ant-card-head {
+  background: linear-gradient(90deg, rgba(22, 93, 255, 0.05), transparent);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+/* 调整建议卡片 */
+.adjustment-card {
+  height: 100%;
+  min-height: 400px;
+}
+
+.adjustment-card .ant-card-head {
+  background: linear-gradient(90deg, rgba(22, 93, 255, 0.05), transparent);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+.adjustment-table .ant-table-tbody > tr > td {
+  padding: 12px 16px;
+}
+
+/* 操作卡片 */
+.action-card {
+  border-radius: 12px;
+  background: linear-gradient(135deg, rgba(22, 93, 255, 0.05), rgba(22, 93, 255, 0.02));
+  border: 1px solid rgba(22, 93, 255, 0.1);
+}
+
+.action-container {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  padding: 8px 0;
+}
+
+.action-info {
+  text-align: center;
+}
+
+.action-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.approve-btn {
+  min-width: 160px;
+  height: 48px;
+  border-radius: 8px;
+  font-weight: 600;
+  box-shadow: 0 4px 12px rgba(22, 93, 255, 0.25);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.approve-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(22, 93, 255, 0.35);
+}
+
+.reject-btn {
+  min-width: 160px;
+  height: 48px;
+  border-radius: 8px;
+  font-weight: 600;
+  box-shadow: 0 4px 12px rgba(245, 63, 63, 0.25);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.reject-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(245, 63, 63, 0.35);
 }
 
 /* 辅助文本 */
@@ -307,11 +582,204 @@ body {
   .page {
     padding: 16px;
   }
+  
+  .report-list-card .ant-list-item {
+    padding: 16px;
+  }
+  
+  .news-item {
+    padding: 16px;
+  }
+  
+  .action-container {
+    gap: 16px;
+  }
+}
+
+@media (max-width: 768px) {
+  .report-item:hover {
+    transform: none;
+  }
+  
+  .summary-item {
+    margin-bottom: 12px;
+  }
+  
+  .chart-card {
+    min-height: 350px;
+  }
+  
+  .adjustment-card {
+    min-height: 350px;
+  }
+  
+  .action-buttons {
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .approve-btn,
+  .reject-btn {
+    width: 100%;
+    max-width: 280px;
+  }
+  
+  /* 报告列表卡片在移动端的适配 */
+  .report-list-card {
+    height: auto;
+    max-height: 400px;
+    margin-bottom: 16px;
+  }
+  
+  /* 卡片间距优化 */
+  .ant-card-body {
+    padding: 16px;
+  }
+  
+  /* 表格响应式 */
+  .ant-table {
+    font-size: 14px;
+  }
+  
+  .adjustment-table .ant-table-tbody > tr > td {
+    padding: 8px 12px;
+  }
+}
+
+@media (max-width: 576px) {
+  .page {
+    padding: 12px;
+  }
+  
+  .page-header {
+    margin-bottom: 16px;
+  }
+  
+  .ant-card-body {
+    padding: 12px;
+  }
+  
+  .action-container {
+    gap: 12px;
+  }
+  
+  /* 列表项间距优化 */
+  .report-item {
+    padding: 12px;
+    margin-bottom: 6px;
+  }
+  
+  .news-item {
+    padding: 12px;
+  }
+  
+  /* 小屏幕上按钮大小调整 */
+  .approve-btn,
+  .reject-btn {
+    height: 44px;
+  }
 }
 
 /* 加载动画 */
 .ant-spin-dot-item {
   background-color: var(--primary-color);
+}
+
+/* 页面加载动画 */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.page {
+  animation: fadeInUp 0.6s ease-out;
+}
+
+/* 卡片内容动画 */
+@keyframes cardSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.ant-card-body {
+  animation: cardSlideIn 0.5s ease-out;
+}
+
+/* 按钮悬停效果优化 */
+.ant-btn {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  border-radius: 6px;
+  font-weight: 500;
+}
+
+.ant-btn:hover {
+  transform: translateY(-1px);
+}
+
+/* 表格行悬停优化 */
+.ant-table-tbody > tr {
+  transition: all 0.2s ease;
+}
+
+.ant-table-tbody > tr:hover > td {
+  background-color: rgba(22, 93, 255, 0.04) !important;
+}
+
+/* 标签效果增强 */
+.ant-tag {
+  transition: all 0.2s ease;
+}
+
+.ant-tag:hover {
+  transform: scale(1.05);
+}
+
+/* 提示框动画 */
+.ant-alert {
+  border-radius: 8px;
+  animation: cardSlideIn 0.5s ease-out;
+}
+
+/* 列表项交互动画 */
+.ant-list-item {
+  transition: all 0.3s ease;
+}
+
+.ant-list-item:hover {
+  transform: translateX(2px);
+}
+
+/* 饼图动画 */
+.recharts-wrapper {
+  animation: fadeInUp 0.8s ease-out;
+}
+
+/* 模态框动画 */
+.ant-modal-content {
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+/* 描述列表样式优化 */
+.ant-descriptions-item-label {
+  font-weight: 600;
+  color: #475569;
+}
+
+.ant-descriptions-item-content {
+  color: #1e293b;
 }
 
 /* 卡片标题美化 */

@@ -218,8 +218,18 @@ export default function AIRecommendation() {
       </div>
 
       <Row gutter={[16, 16]}>
-        <Col xs={24} lg={8}>
-          <Card title="报告列表" bordered={false} loading={loadingList}>
+        <Col xs={24} lg={7}>
+          <Card 
+            title="报告列表" 
+            bordered={false} 
+            loading={loadingList}
+            className="report-list-card"
+            extra={
+              <Button type="link" size="small" onClick={loadReports}>
+                刷新
+              </Button>
+            }
+          >
             <List
               dataSource={reports}
               renderItem={(report) => (
@@ -232,13 +242,23 @@ export default function AIRecommendation() {
                   className={selectedReportId === report.id ? 'report-item active' : 'report-item'}
                 >
                   <List.Item.Meta
+                    avatar={
+                      <div className={`report-status-indicator ${report.status}`} />
+                    }
                     title={
                       <Space>
-                        <span>报告 {report.id}</span>
+                        <span className="report-id">#{report.id}</span>
                         <Tag color={statusColors[report.status]}>{statusTexts[report.status]}</Tag>
                       </Space>
                     }
-                    description={report.date}
+                    description={
+                      <div>
+                        <div className="report-date">{report.date}</div>
+                        {report.status === 'pending' && (
+                          <Tag size="small" color="blue">待处理</Tag>
+                        )}
+                      </div>
+                    }
                   />
                 </List.Item>
               )}
@@ -246,38 +266,59 @@ export default function AIRecommendation() {
           </Card>
         </Col>
 
-        <Col xs={24} lg={16}>
+        <Col xs={24} lg={17}>
           {loadingDetail && (
-            <Card bordered={false}>
-              <Spin />
+            <Card bordered={false} className="detail-loading-card">
+              <div className="loading-container">
+                <Spin size="large" />
+                <Typography.Text type="secondary" style={{ marginTop: 16, display: 'block' }}>
+                  正在加载报告详情...
+                </Typography.Text>
+              </div>
             </Card>
           )}
           {!loadingDetail && detail && (
             <Space direction="vertical" size={16} style={{ width: '100%' }}>
-              <Card title="建议摘要" bordered={false}>
-                <Descriptions column={2} size="middle">
-                  <Descriptions.Item label="报告编号">{detail.id}</Descriptions.Item>
-                  <Descriptions.Item label="生成时间">{detail.date}</Descriptions.Item>
-                  <Descriptions.Item label="状态">
-                    <Tag color={statusColors[detail.status]}>{statusTexts[detail.status]}</Tag>
-                  </Descriptions.Item>
-                  <Descriptions.Item label="风险等级">
-                    <Tag icon={<WarningOutlined />} color={riskColors[detail.riskLevel]}>
-                      {riskTexts[detail.riskLevel]}
-                    </Tag>
-                  </Descriptions.Item>
-                  <Descriptions.Item label="AI 总体判断" span={2}>
-                    <Alert message={detail.aiJudgment} type="info" showIcon />
-                  </Descriptions.Item>
-                </Descriptions>
+              <Card title="建议摘要" bordered={false} className="summary-card">
+                <Row gutter={[24, 16]}>
+                  <Col xs={24} sm={12}>
+                    <div className="summary-item">
+                      <span className="summary-label">报告编号</span>
+                      <span className="summary-value">#{detail.id}</span>
+                    </div>
+                    <div className="summary-item">
+                      <span className="summary-label">生成时间</span>
+                      <span className="summary-value">{detail.date}</span>
+                    </div>
+                  </Col>
+                  <Col xs={24} sm={12}>
+                    <div className="summary-item">
+                      <span className="summary-label">状态</span>
+                      <Tag color={statusColors[detail.status]}>{statusTexts[detail.status]}</Tag>
+                    </div>
+                    <div className="summary-item">
+                      <span className="summary-label">风险等级</span>
+                      <Tag icon={<WarningOutlined />} color={riskColors[detail.riskLevel]}>
+                        {riskTexts[detail.riskLevel]}
+                      </Tag>
+                    </div>
+                  </Col>
+                  <Col xs={24}>
+                    <div className="ai-judgment">
+                      <div className="summary-label">AI 总体判断</div>
+                      <Alert message={detail.aiJudgment} type="info" showIcon />
+                    </div>
+                  </Col>
+                </Row>
               </Card>
 
-              <Card title="关联市场消息" bordered={false}>
+              <Card title="关联市场消息" bordered={false} className="news-card">
                 <List
                   dataSource={detail.relatedNews}
                   renderItem={(news) => (
                     <List.Item
                       key={news.id}
+                      className="news-item"
                       actions={[
                         <Button
                           type="link"
@@ -285,83 +326,112 @@ export default function AIRecommendation() {
                           href={news.source}
                           target="_blank"
                           key="link"
+                          className="news-source-btn"
                         >
-                          来源
+                          查看来源
                         </Button>,
                       ]}
                     >
                       <List.Item.Meta
+                        avatar={
+                          <div className={`news-sentiment-indicator ${news.sentiment}`} />
+                        }
                         title={
                           <Space>
-                            <Tag color="blue">{news.coin}</Tag>
-                            <Tag color={sentimentColors[news.sentiment]}>
+                            <Tag color="blue" className="news-coin-tag">{news.coin}</Tag>
+                            <Tag color={sentimentColors[news.sentiment]} className="news-sentiment-tag">
                               {sentimentTexts[news.sentiment]}
                             </Tag>
-                            <span className="subtle-text">{news.time}</span>
+                            <span className="news-time subtle-text">{news.time}</span>
                           </Space>
                         }
-                        description={news.summary}
+                        description={
+                          <div className="news-summary">{news.summary}</div>
+                        }
                       />
                     </List.Item>
                   )}
                 />
               </Card>
 
-              <Card title="当前持仓快照" bordered={false}>
-                <ResponsiveContainer width="100%" height={260}>
-                  <PieChart>
-                    <Pie
-                      data={pieData}
-                      cx="50%"
-                      cy="50%"
-                      nameKey="name"
-                      labelLine={false}
-                      label={({ name, value }) => `${name} ${value}%`}
-                      outerRadius={90}
-                      fill="#8884d8"
-                      dataKey="percentage"
-                    >
-                      {pieData.map((item, index) => (
-                        <Cell key={item.name} fill={COLORS[index % COLORS.length]} />
-                      ))}
-                    </Pie>
-                    <Tooltip formatter={(value) => `${value}%`} />
-                    <Legend />
-                  </PieChart>
-                </ResponsiveContainer>
-              </Card>
+              <Row gutter={[16, 16]}>
+                <Col xs={24} lg={12}>
+                  <Card title="当前持仓快照" bordered={false} className="chart-card">
+                    <ResponsiveContainer width="100%" height={300}>
+                      <PieChart>
+                        <Pie
+                          data={pieData}
+                          cx="50%"
+                          cy="50%"
+                          nameKey="name"
+                          labelLine={false}
+                          label={({ name, value }) => `${name} ${value}%`}
+                          outerRadius={90}
+                          fill="#8884d8"
+                          dataKey="percentage"
+                          animationBegin={0}
+                          animationDuration={800}
+                        >
+                          {pieData.map((item, index) => (
+                            <Cell key={item.name} fill={COLORS[index % COLORS.length]} />
+                          ))}
+                        </Pie>
+                        <Tooltip formatter={(value) => `${value}%`} />
+                        <Legend />
+                      </PieChart>
+                    </ResponsiveContainer>
+                    <div className="chart-footer">
+                      {pieData.length} 种币种持仓
+                    </div>
+                  </Card>
+                </Col>
 
-              {detail.proposedChanges.length > 0 && (
-                <Card title="调整建议方案" bordered={false}>
-                  <Table
-                    columns={adjustmentColumns}
-                    dataSource={detail.proposedChanges}
-                    rowKey="coin"
-                    pagination={false}
-                  />
-                </Card>
-              )}
+                {detail.proposedChanges.length > 0 && (
+                  <Col xs={24} lg={12}>
+                    <Card title="调整建议方案" bordered={false} className="adjustment-card">
+                      <Table
+                        columns={adjustmentColumns}
+                        dataSource={detail.proposedChanges}
+                        rowKey="coin"
+                        pagination={false}
+                        size="small"
+                        className="adjustment-table"
+                      />
+                    </Card>
+                  </Col>
+                )}
+              </Row>
 
               {detail.status === 'pending' && (
-                <Card bordered={false}>
-                  <Space size="large">
-                    <Button
-                      type="primary"
-                      size="large"
-                      icon={<CheckCircleOutlined />}
-                      onClick={handleApprove}
-                    >
-                      通过
-                    </Button>
-                    <Button
-                      danger
-                      size="large"
-                      icon={<CloseCircleOutlined />}
-                      onClick={handleReject}
-                    >
-                      驳回
-                    </Button>
-                  </Space>
+                <Card bordered={false} className="action-card">
+                  <div className="action-container">
+                    <div className="action-info">
+                      <Typography.Title level={4}>操作建议</Typography.Title>
+                      <Typography.Text type="secondary">
+                        请审核此AI建议报告，选择通过或驳回
+                      </Typography.Text>
+                    </div>
+                    <div className="action-buttons">
+                      <Button
+                        type="primary"
+                        size="large"
+                        icon={<CheckCircleOutlined />}
+                        onClick={handleApprove}
+                        className="approve-btn"
+                      >
+                        通过建议
+                      </Button>
+                      <Button
+                        danger
+                        size="large"
+                        icon={<CloseCircleOutlined />}
+                        onClick={handleReject}
+                        className="reject-btn"
+                      >
+                        驳回建议
+                      </Button>
+                    </div>
+                  </div>
                 </Card>
               )}
             </Space>
