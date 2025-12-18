@@ -42,35 +42,68 @@ curl -X POST http://localhost:8080/api/news/ingest ^
   }
 ]
 ```
-新增支持批量插入报告数据API`POST /api/reports/batch-insert`
-- JSON格式请求体：
+新增灵活的报告插入API设计
+`POST /api/reports` 处理单条报告插入
 ```
 {
   "report": {
-    "id": "R005",
-    "generated_at": "2024-12-18 11:00:00",
+    "generated_at": "2025-12-18 14:30:00",
     "status": "PENDING",
-    "ai_judgment": "建议降低 BTC 持仓比例，增加 ETH 配置",
-    "risk_level": "MEDIUM"
+    "ai_judgment": "市场短期超买，建议收缩高波动资产。",
+    "risk_level": "HIGH"
   },
   "report_changes": [
     {
       "coin": "BTC",
-      "current_amount": 2.5,
-      "proposed_amount": 2.2,
-      "reason": "短期鹰派信号可能对 BTC 造成压力，适度降低仓位"
-    },
-    {
-      "coin": "ETH",
-      "current_amount": 15.0,
-      "proposed_amount": 18.0,
-      "reason": "Layer2 活跃度提升，ETH 基本面向好，建议增持"
+      "current_amount": 1.2,
+      "proposed_amount": 0.8,
+      "reason": "信号偏空"
     }
   ],
   "report_news": [1, 2, 3]
 }
 ```
-
+`POST /api/reports/batch` 处理批量报告插入
+```
+{
+  "reports": [
+    {
+      "report": {
+        "generated_at": "2025-12-18 15:45:10",
+        "status": "PENDING",
+        "ai_judgment": "生态活跃，加仓 SOL。",
+        "risk_level": "MEDIUM"
+      },
+      "report_changes": [
+        {
+          "coin": "SOL",
+          "current_amount": 50.0,
+          "proposed_amount": 120.0,
+          "reason": "生态爆发"
+        }
+      ],
+      "report_news": [1, 2, 3]
+    },
+    {
+      "report": {
+        "generated_at": "2025-12-18 16:20:00",
+        "status": "PENDING",
+        "ai_judgment": "防御型配置。",
+        "risk_level": "LOW"
+      },
+      "report_changes": [
+        {
+          "coin": "LINK",
+          "current_amount": 200.0,
+          "proposed_amount": 300.0,
+          "reason": "RWA 稳健"
+        }
+      ],
+      "report_news": [1, 2, 3]
+    }
+  ]
+}
+```
 ## 数据表字段（schema.sql）
 ### news
 - `id` BIGINT PK 自增

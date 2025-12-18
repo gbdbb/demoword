@@ -2,6 +2,8 @@ package com.example.backend.controller;
 
 import com.example.backend.dto.BatchInsertRequest;
 import com.example.backend.dto.BatchInsertResponse;
+import com.example.backend.dto.BatchReportsRequest;
+import com.example.backend.dto.BatchReportsResponse;
 import com.example.backend.dto.ReportDetailDto;
 import com.example.backend.dto.ReportSummaryDto;
 import com.example.backend.dto.ReviewRequest;
@@ -75,8 +77,105 @@ public class ReportController {
     }
 
     /**
-     * 批量插入报告数据API
-     * 路径: /api/report/batch-insert
+     * 插入单条报告数据API
+     * 路径: /api/reports
+     * 方法: POST
+     * 功能: 插入单条报告数据
+     */
+    @PostMapping
+    public ResponseEntity<BatchInsertResponse> insertReport(@Valid @RequestBody BatchInsertRequest request) {
+        log.info("收到插入单条报告请求: {}", request);
+        
+        try {
+            Long reportId = reportService.batchInsertReport(request);
+            log.info("插入报告成功，报告ID: {}", reportId);
+            BatchInsertResponse.ResponseData data = BatchInsertResponse.ResponseData.builder()
+                    .reportId(reportId)
+                    .build();
+            BatchInsertResponse response = BatchInsertResponse.builder()
+                    .code(200)
+                    .msg("数据插入成功")
+                    .data(data)
+                    .build();
+            return ResponseEntity.ok(response);
+        } catch (IllegalArgumentException e) {
+            // 数据校验失败，返回400
+            log.error("插入报告数据校验失败: {}", e.getMessage());
+            BatchInsertResponse response = BatchInsertResponse.builder()
+                    .code(400)
+                    .msg(e.getMessage())
+                    .data(null)
+                    .build();
+            return ResponseEntity.badRequest().body(response);
+        } catch (Exception e) {
+            // 其他异常，返回500
+            log.error("插入报告异常: {}", e.getMessage(), e);
+            BatchInsertResponse response = BatchInsertResponse.builder()
+                    .code(500)
+                    .msg("异常: " + e.getMessage())
+                    .data(null)
+                    .build();
+            return ResponseEntity.internalServerError().body(response);
+        }
+    }
+
+    /**
+     * 批量插入多条报告数据API
+     * 路径: /api/reports/batch
+     * 方法: POST
+     * 功能: 批量插入多条报告数据
+     */
+    @PostMapping("/batch")
+    public ResponseEntity<BatchReportsResponse> insertReports(@Valid @RequestBody BatchReportsRequest request) {
+        log.info("收到批量插入多条报告请求，报告数量: {}", request.getReports().size());
+        
+        try {
+            // 创建结果列表
+            java.util.List<BatchInsertResponse.ResponseData> results = new java.util.ArrayList<>();
+            
+            // 逐条插入报告
+            for (BatchInsertRequest reportRequest : request.getReports()) {
+                try {
+                    Long reportId = reportService.batchInsertReport(reportRequest);
+                    log.info("插入报告成功，报告ID: {}", reportId);
+                    
+                    BatchInsertResponse.ResponseData data = BatchInsertResponse.ResponseData.builder()
+                            .reportId(reportId)
+                            .build();
+                    results.add(data);
+                } catch (Exception e) {
+                    log.error("插入单条报告失败: {}", e.getMessage(), e);
+                    // 对于批量操作，可以选择继续处理其他报告或者整体失败
+                    // 这里我们选择记录错误但继续处理其他报告
+                    BatchInsertResponse.ResponseData data = BatchInsertResponse.ResponseData.builder()
+                            .reportId(null)
+                            .build();
+                    results.add(data);
+                }
+            }
+            
+            BatchReportsResponse response = BatchReportsResponse.of(results);
+            return ResponseEntity.ok(response);
+        } catch (IllegalArgumentException e) {
+            // 数据校验失败，返回400
+            log.error("批量插入报告数据校验失败: {}", e.getMessage());
+            BatchReportsResponse response = BatchReportsResponse.builder()
+                    .results(java.util.Collections.emptyList())
+                    .build();
+            return ResponseEntity.badRequest().body(response);
+        } catch (Exception e) {
+            // 其他异常，返回500
+            log.error("批量插入报告异常: {}", e.getMessage(), e);
+            BatchReportsResponse response = BatchReportsResponse.builder()
+                    .results(java.util.Collections.emptyList())
+                    .build();
+            return ResponseEntity.internalServerError().body(response);
+        }
+    }
+
+    /**
+     * 批量插入报告数据API (保留原有接口以兼容旧客户端)
+     * 路径: /api/reports/batch-insert
      * 方法: POST
      * 功能: 将报告主记录、报告变更建议、报告新闻关联数据批量写入MySQL数据库
      */
