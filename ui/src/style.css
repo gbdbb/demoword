@@ -13,6 +13,9 @@
   --warning-color: #ff7d00;
   --danger-color: #f53f3f;
   --info-color: #86909c;
+  /* Ant Design绿色系列 */
+  --ant-green-1: #f6ffed;
+  --ant-green-7: #52c41a;
   --bg-gradient: radial-gradient(circle at 10% 10%, #e0f7fa 0, transparent 25%),
     radial-gradient(circle at 90% 0%, #f3e5f5 0, transparent 20%),
     #f8fafc;
@@ -59,21 +62,71 @@ body {
 
 .app-sider .ant-menu-item {
   color: #cbd5e1;
-  margin: 4px 12px;
+  margin: 4px 8px;
   border-radius: 8px;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  padding-left: 16px !important;
+  padding-right: 16px !important;
+  width: calc(100% - 16px);
+}
+
+.app-sider .ant-menu-item .anticon {
+  color: inherit;
+  transition: color 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .app-sider .ant-menu-item:hover {
-  background: rgba(22, 93, 255, 0.15);
-  color: #fff;
+  background: var(--primary-hover);
+  color: #fff !important;
   transform: translateX(4px);
+}
+
+.app-sider .ant-menu-item:hover .anticon {
+  color: #fff !important;
 }
 
 .app-sider .ant-menu-item-selected {
   background: linear-gradient(90deg, rgba(22, 93, 255, 0.3), rgba(22, 93, 255, 0.1));
-  color: #fff;
-  border-right: 3px solid var(--primary-color);
+  color: #fff !important;
+  width: calc(100% - 16px);
+}
+
+.app-sider .ant-menu-item-selected .anticon {
+  color: #fff !important;
+}
+
+/* 解决点击和长按菜单项时出现蓝白背景的问题 */
+.app-sider .ant-menu-item:active,
+.app-sider .ant-menu-item:focus,
+.app-sider .ant-menu-item.ant-menu-item-active,
+.app-sider .ant-menu-item.ant-menu-item-selected:active {
+  background: var(--primary-hover) !important;
+  color: #fff !important;
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+.app-sider .ant-menu-item:active .anticon,
+.app-sider .ant-menu-item:focus .anticon,
+.app-sider .ant-menu-item.ant-menu-item-active .anticon,
+.app-sider .ant-menu-item.ant-menu-item-selected:active .anticon {
+  color: #fff !important;
+}
+
+/* 禁用浏览器默认的用户选择样式 */
+.app-sider .ant-menu-item {
+  user-select: none !important;
+  -webkit-user-select: none !important;
+  -moz-user-select: none !important;
+  -ms-user-select: none !important;
+}
+
+/* 确保整个菜单区域都没有蓝白选择背景 */
+.app-sider .ant-menu {
+  user-select: none !important;
+  -webkit-user-select: none !important;
+  -moz-user-select: none !important;
+  -ms-user-select: none !important;
 }
 
 /* Logo 美化 */
@@ -112,6 +165,28 @@ body {
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
+}
+
+/* 解决侧边栏折叠时logo不居中的问题 */
+.app-sider.ant-layout-sider-collapsed .logo-block {
+  justify-content: center;
+  padding-left: 0;
+  padding-right: 0;
+}
+
+.app-sider.ant-layout-sider-collapsed .logo-mark {
+  margin: 0 auto;
+}
+
+/* 折叠状态下菜单项图标居中解决方案 */
+.ant-layout-sider-collapsed .ant-menu-item {
+  text-align: center;
+  width: 40px; /* 固定宽度，减小遮罩大小 */
+  margin: 4px auto;
+}
+
+.ant-layout-sider-collapsed .ant-menu-item .anticon {
+  margin-left: -4px;
 }
 
 /* Header 美化 */
@@ -252,16 +327,18 @@ body {
 
 /* 特定卡片增强样式 */
 .report-list-card {
-  height: calc(100vh - 200px);
+  height: calc(100vh - 218px);
   overflow-y: auto;
-  scrollbar-width: thin;
-  scrollbar-color: rgba(0, 0, 0, 0.1) transparent;
   position: sticky;
   top: 0;
 }
 
 .report-list-card::-webkit-scrollbar {
-  width: 6px;
+  width: 4px;
+}
+
+.report-list-card::-webkit-scrollbar-button {
+  display: none;
 }
 
 .report-list-card::-webkit-scrollbar-track {
@@ -270,11 +347,7 @@ body {
 
 .report-list-card::-webkit-scrollbar-thumb {
   background-color: rgba(0, 0, 0, 0.1);
-  border-radius: 3px;
-}
-
-.report-list-card::-webkit-scrollbar-thumb:hover {
-  background-color: rgba(0, 0, 0, 0.2);
+  border-radius: 2px;
 }
 
 /* 按钮美化 */
@@ -337,7 +410,7 @@ body {
 
 /* 报告列表项 */
 .report-item {
-  padding: 12px 16px;
+  padding: 12px 16px ;
   cursor: pointer;
   border-radius: 12px;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -359,11 +432,24 @@ body {
   box-shadow: 0 4px 12px rgba(22, 93, 255, 0.15);
 }
 
+.report-list-card .ant-list-item-meta {
+  align-items: baseline;
+  margin-left: 10px;
+}
+
+.report-list-card .ant-list-item-meta-avatar {
+  margin-right: 0;
+  margin-left: 20px;
+  display: block;
+}
+
 .report-status-indicator {
   width: 8px;
   height: 8px;
   border-radius: 50%;
   flex-shrink: 0;
+  display: inline-block;
+  vertical-align: baseline;
 }
 
 .report-status-indicator.pending {
@@ -417,16 +503,38 @@ body {
   border-bottom: 1px solid rgba(0, 0, 0, 0.06);
 }
 
+/* 市场消息卡片标题栏遮罩效果 */
+.news-card .ant-card-head {
+  background: linear-gradient(90deg, rgba(22, 93, 255, 0.05), transparent);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+}
+
 /* 为并排的卡片添加相匹配的高度 */
-.summary-card, .news-card {
-  height: 100%;
-  min-height: 400px;
+.summary-card, .news-card, .chart-card, .adjustment-card {
+  height: calc(33vh - 66px);
+  min-height: 267px;
 }
 
 .summary-card .ant-card-body, .news-card .ant-card-body {
   height: calc(100% - 56px);
   display: flex;
   flex-direction: column;
+}
+
+.adjustment-card .ant-card-body {
+  height: calc(100% - 56px);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 20px 24px;
+}
+
+.chart-card .ant-card-body {
+  height: calc(100% - 56px);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 5px 24px;
 }
 
 /* 市场消息列表在卡片中的自适应布局 */
@@ -456,6 +564,17 @@ body {
   margin-bottom: 16px;
 }
 
+/* 减小AI总体判断与上方内容的间距 */
+.summary-card .ant-row:last-child {
+  margin-top: -8px; /* 减少Row的默认gutter间距 */
+}
+
+/* 进一步调整AI总体判断的上边距 */
+.ai-judgment {
+  margin-top: -25px;
+  padding-top: 4px;
+}
+
 .summary-label {
   font-size: 12px;
   color: var(--secondary-color);
@@ -469,10 +588,6 @@ body {
   font-weight: 500;
 }
 
-.ai-judgment {
-  margin-top: 8px;
-}
-
 .ai-judgment .ant-alert {
   border-radius: 8px;
   border-left: 4px solid var(--info-color);
@@ -480,10 +595,11 @@ body {
 
 /* 市场消息卡片 */
 .news-card .ant-list-item {
-  padding: 20px 16px;
+  padding: 12px 16px;
   border-radius: 8px;
   transition: all 0.3s ease;
   border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+  margin-bottom: 5px;
 }
 
 .news-item:hover {
@@ -497,6 +613,14 @@ body {
   height: 12px;
   border-radius: 50%;
   flex-shrink: 0;
+  margin: 4px 0;
+}
+
+.news-card .ant-list-item-meta-avatar {
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .news-sentiment-indicator.bullish {
@@ -530,8 +654,8 @@ body {
 
 /* 图表卡片 */
 .chart-card {
-  height: 100%;
-  min-height: 400px;
+  height: calc(33vh - 66px);
+  min-height: 267px;
 }
 
 .chart-card .ant-card-head {
@@ -539,15 +663,51 @@ body {
   border-bottom: 1px solid rgba(0, 0, 0, 0.06);
 }
 
+/* 图表容器自适应 */
+.chart-card .recharts-responsive-container {
+  height: 100% !important;
+}
+
 /* 调整建议卡片 */
 .adjustment-card {
-  height: 100%;
-  min-height: 400px;
+  height: calc(33vh - 66px);
+  min-height: 267px;
 }
 
 .adjustment-card .ant-card-head {
   background: linear-gradient(90deg, rgba(22, 93, 255, 0.05), transparent);
   border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+/* 调整建议表格自适应 */
+.adjustment-table {
+  height: 100%;
+}
+
+.adjustment-table .ant-table {
+  height: 100%;
+  overflow: hidden;
+}
+
+.adjustment-table .ant-table-body {
+  max-height: calc(100% - 39px); /* 减去表头高度 */
+  overflow-y: auto;
+}
+
+.adjustment-table .ant-table-thead > tr:first-child > th:first-child {
+  border-top-left-radius: 12px;
+}
+
+.adjustment-table .ant-table-thead > tr:first-child > th:last-child {
+  border-top-right-radius: 12px;
+}
+
+.adjustment-table .ant-table-tbody > tr:last-child > td:first-child {
+  border-bottom-left-radius: 12px;
+}
+
+.adjustment-table .ant-table-tbody > tr:last-child > td:last-child {
+  border-bottom-right-radius: 12px;
 }
 
 .adjustment-table .ant-table-tbody > tr > td {
@@ -559,6 +719,7 @@ body {
   border-radius: 12px;
   background: linear-gradient(135deg, rgba(22, 93, 255, 0.05), rgba(22, 93, 255, 0.02));
   border: 1px solid rgba(22, 93, 255, 0.1);
+  /* 移除额外的margin-top，使用Space组件的统一间距16px */
 }
 
 .action-container {
@@ -584,13 +745,18 @@ body {
   height: 48px;
   border-radius: 8px;
   font-weight: 600;
-  box-shadow: 0 4px 12px rgba(22, 93, 255, 0.25);
+  color: var(--ant-green-7) !important;
+  border-color: var(--ant-green-7) !important;
+  box-shadow: 0 4px 12px rgba(82, 196, 26, 0.25);
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .approve-btn:hover {
   transform: translateY(-2px);
-  box-shadow: 0 6px 16px rgba(22, 93, 255, 0.35);
+
+  color: var(--ant-green-7) !important;
+
+  box-shadow: 0 6px 16px rgba(82, 196, 26, 0.35);
 }
 
 .reject-btn {
@@ -598,6 +764,8 @@ body {
   height: 48px;
   border-radius: 8px;
   font-weight: 600;
+  color: var(--ant-red-7) !important;
+  border-color: var(--ant-red-7) !important;
   box-shadow: 0 4px 12px rgba(245, 63, 63, 0.25);
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
@@ -689,11 +857,15 @@ body {
   }
   
   /* 移动端卡片高度重置 */
-  .summary-card, .news-card {
-    min-height: auto;
+  .summary-card, .news-card, .chart-card, .adjustment-card {
+    height: auto !important;
+    min-height: 267px;
   }
   
-  .summary-card .ant-card-body, .news-card .ant-card-body {
+  .summary-card .ant-card-body, 
+  .news-card .ant-card-body,
+  .chart-card .ant-card-body,
+  .adjustment-card .ant-card-body {
     height: auto;
   }
   

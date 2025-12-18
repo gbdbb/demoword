@@ -23,7 +23,7 @@ import {
   LinkOutlined,
 } from '@ant-design/icons';
 import type { ColumnsType } from 'antd/es/table';
-import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from 'recharts';
+import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip, Text } from 'recharts';
 import { api, type ReportDetail, type ReportSummary, type ProposedChange } from '../api';
 
 const { TextArea } = Input;
@@ -81,6 +81,11 @@ export default function AIRecommendation() {
         percentage: item.percentage,
       }))
     : [];
+
+  // 计算总资产估值
+  const totalAssetValue = detail
+    ? detail.currentHoldings.reduce((sum, item) => sum + item.value, 0)
+    : 0;
 
   const loadReports = () => {
     setLoadingList(true);
@@ -218,6 +223,48 @@ export default function AIRecommendation() {
       </div>
 
       <div className="report-content">
+        <div className="report-list-sidebar">
+          <Card 
+            title="报告列表" 
+            bordered={false} 
+            loading={loadingList}
+            className="report-list-card"
+            extra={
+              <Button type="link" size="small" onClick={loadReports}>
+                刷新
+              </Button>
+            }
+          >
+            <List
+              dataSource={reports}
+              renderItem={(report) => (
+                <List.Item
+                  key={report.id}
+                  onClick={() => {
+                    setSelectedReportId(report.id);
+                    loadDetail(report.id);
+                  }}
+                  className={selectedReportId === report.id ? 'report-item active' : 'report-item'}
+                >
+                  <List.Item.Meta
+                    title={
+                      <Space>
+                        <span className="report-id">#{report.id}</span>
+                        <Tag color={statusColors[report.status]}>{statusTexts[report.status]}</Tag>
+                      </Space>
+                    }
+                    description={
+                      <div>
+                        <div className="report-date">{report.date}</div>
+                      </div>
+                    }
+                  />
+                </List.Item>
+              )}
+            />
+          </Card>
+        </div>
+        
         <div className="main-content">
           {loadingDetail && (
             <Card bordered={false} className="detail-loading-card">
@@ -288,9 +335,6 @@ export default function AIRecommendation() {
                           ]}
                         >
                           <List.Item.Meta
-                            avatar={
-                              <div className={`news-sentiment-indicator ${news.sentiment}`} />
-                            }
                             title={
                               <Space>
                                 <Tag color="blue" className="news-coin-tag">{news.coin}</Tag>
@@ -314,31 +358,39 @@ export default function AIRecommendation() {
               <Row gutter={[16, 16]}>
                 <Col xs={24} lg={12}>
                   <Card title="当前持仓快照" bordered={false} className="chart-card">
-                    <ResponsiveContainer width="100%" height={300}>
-                      <PieChart>
-                        <Pie
-                          data={pieData}
-                          cx="50%"
-                          cy="50%"
-                          nameKey="name"
-                          labelLine={false}
-                          label={({ name, value }) => `${name} ${value}%`}
-                          outerRadius={90}
-                          fill="#8884d8"
-                          dataKey="percentage"
-                          animationBegin={0}
-                          animationDuration={800}
-                        >
-                          {pieData.map((item, index) => (
-                            <Cell key={item.name} fill={COLORS[index % COLORS.length]} />
-                          ))}
-                        </Pie>
-                        <Tooltip formatter={(value) => `${value}%`} />
-                        <Legend />
-                      </PieChart>
-                    </ResponsiveContainer>
-                    <div className="chart-footer">
-                      {pieData.length} 种币种持仓
+                    <div style={{ display: 'flex', alignItems: 'center', height: '100%', position: 'relative' }}>
+                      <div style={{ position: 'absolute', left: '24px', display: 'flex', flexDirection: 'column', justifyContent: 'center', height: '100%' }}>
+                        <div style={{ fontSize: '14px', color: '#64748b', marginBottom: '4px', fontWeight: '500' }}>
+                          当前总资产估值
+                        </div>
+                        <div style={{ fontSize: '28px', fontWeight: '700', background: 'linear-gradient(135deg, #165dff, #22d3ee)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>
+                          ${totalAssetValue.toLocaleString()}
+                        </div>
+                      </div>
+                      <div style={{ marginLeft: 'auto', width: '50%', height: '100%' }}>
+                        <ResponsiveContainer width="100%" height="100%">
+                          <PieChart>
+                            <Pie
+                              data={pieData}
+                              cx="50%"
+                              cy="50%"
+                              nameKey="name"
+                              labelLine={false}
+                              label={({ name, value }) => `${name} ${value}%`}
+                              outerRadius={70}
+                              fill="#8884d8"
+                              dataKey="percentage"
+                              animationBegin={0}
+                              animationDuration={800}
+                            >
+                              {pieData.map((item, index) => (
+                                <Cell key={item.name} fill={COLORS[index % COLORS.length]} />
+                              ))}
+                            </Pie>
+                            <Tooltip formatter={(value) => `${value}%`} />
+                          </PieChart>
+                        </ResponsiveContainer>
+                      </div>
                     </div>
                   </Card>
                 </Col>
@@ -370,7 +422,6 @@ export default function AIRecommendation() {
                     </div>
                     <div className="action-buttons">
                       <Button
-                        type="primary"
                         size="large"
                         icon={<CheckCircleOutlined />}
                         onClick={handleApprove}
@@ -393,54 +444,6 @@ export default function AIRecommendation() {
               )}
             </Space>
           )}
-        </div>
-        
-        <div className="report-list-sidebar">
-          <Card 
-            title="报告列表" 
-            bordered={false} 
-            loading={loadingList}
-            className="report-list-card"
-            extra={
-              <Button type="link" size="small" onClick={loadReports}>
-                刷新
-              </Button>
-            }
-          >
-            <List
-              dataSource={reports}
-              renderItem={(report) => (
-                <List.Item
-                  key={report.id}
-                  onClick={() => {
-                    setSelectedReportId(report.id);
-                    loadDetail(report.id);
-                  }}
-                  className={selectedReportId === report.id ? 'report-item active' : 'report-item'}
-                >
-                  <List.Item.Meta
-                    avatar={
-                      <div className={`report-status-indicator ${report.status}`} />
-                    }
-                    title={
-                      <Space>
-                        <span className="report-id">#{report.id}</span>
-                        <Tag color={statusColors[report.status]}>{statusTexts[report.status]}</Tag>
-                      </Space>
-                    }
-                    description={
-                      <div>
-                        <div className="report-date">{report.date}</div>
-                        {report.status === 'pending' && (
-                          <Tag size="small" color="blue">待处理</Tag>
-                        )}
-                      </div>
-                    }
-                  />
-                </List.Item>
-              )}
-            />
-          </Card>
         </div>
       </div>
 
