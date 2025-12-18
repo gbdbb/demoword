@@ -1,41 +1,76 @@
-# Compiled class files
-*.class
+# ==========================================
+# 1. 核心忽略 (通配符增强 - 确保覆盖所有子目录)
+# ==========================================
+**/target/
+**/node_modules/
+**/dist/
+**/dist-ssr/
+**/*.local
+# 新增：忽略 Vite 和 IDE 的各种缓存目录
+**/.cache/
+**/.temp/
+**/.tmp/
 
-# Package Files
-*.jar
-*.war
-*.ear
+# ==========================================
+# 2. IDE & 编辑器 (强化：确保忽略子模块中的配置)
+# ==========================================
+# 修改：使用 **/ 确保 backend/.idea 或 ui/.vscode 也能被忽略
+**/.vscode/
+**/.idea/
+**/*.iml
+**/*.iws
+**/*.ipr
+**/.classpath
+**/.project
+**/.settings/
+**/.history/
+**/.ionide/
+# 新增：IntelliJ IDEA 的工作空间和任务配置
+**/.idea/workspace.xml
+**/.idea/tasks.xml
+**/.idea/shelf/
 
-# Maven/Gradle generated directories
-/target/
-/backend/target/ # 确保您的backend模块的target目录也被忽略
-
-# IDE配置文件
-.vscode/
-.idea/
-
-# 操作系统生成的文件
-.DS_Store
-Thumbs.db
-
-# 临时文件
-*.tmp
-*.temp
-*~
-
+# ==========================================
+# 3. 前端专项 (Vite / Node / Vue/React)
+# ==========================================
 # 日志文件
-*.log
-logs/
+**/npm-debug.log*
+**/yarn-debug.log*
+**/yarn-error.log*
+**/pnpm-debug.log*
 
-# 前端构建产物
-ui/node_modules/
-ui/dist/
-ui/dist-ssr/
-*.local
+# 编辑器/校验缓存
+**/.eslintcache
+**/.stylelintcache
+**/.vite-inspect
+# 新增：Vite 运行时的元数据
+**/.vite/
 
-# 其他配置文件
-.env
-.env.local
-.env.development.local
-.env.test.local
-.env.production.local
+# ==========================================
+# 4. 后端专项 (Spring Boot / Maven / Java)
+# ==========================================
+**/*.class
+**/*.jar
+**/*.war
+**/*.ear
+**/*.patch
+**/*.diff
+
+# 新增：Maven 包装器 (如果你不需要把 mvnw 推上去)
+# .mvn/
+# mvnw
+# mvnw.cmd
+
+# 新增：如果你使用 Hibernate 或 JPA 产生的临时文件
+**/help.md
+**/out/
+
+# ==========================================
+# 5. 操作系统与环境
+# ==========================================
+**/.DS_Store
+**/Thumbs.db
+**/desktop.ini
+# 新增：防止上传本地环境变量备份
+**/.env.local
+**/.env.*.local
