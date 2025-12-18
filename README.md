@@ -130,7 +130,7 @@ curl -X POST http://localhost:8080/api/news/ingest ^
 - `percentage` DECIMAL(6,2)
 
 ### report
-- `id` VARCHAR(20) PK
+- `id` BIGINT PK 自增
 - `generated_at` DATETIME
 - `status` VARCHAR(20)
 - `ai_judgment` TEXT
