@@ -42,6 +42,35 @@ curl -X POST http://localhost:8080/api/news/ingest ^
   }
 ]
 ```
+新增支持批量插入报告数据API`POST /api/reports/batch-insert`
+- JSON格式请求体：
+```
+{
+  "report": {
+    "id": "R005",
+    "generated_at": "2024-12-18 11:00:00",
+    "status": "PENDING",
+    "ai_judgment": "建议降低 BTC 持仓比例，增加 ETH 配置",
+    "risk_level": "MEDIUM"
+  },
+  "report_changes": [
+    {
+      "coin": "BTC",
+      "current_amount": 2.5,
+      "proposed_amount": 2.2,
+      "reason": "短期鹰派信号可能对 BTC 造成压力，适度降低仓位"
+    },
+    {
+      "coin": "ETH",
+      "current_amount": 15.0,
+      "proposed_amount": 18.0,
+      "reason": "Layer2 活跃度提升，ETH 基本面向好，建议增持"
+    }
+  ],
+  "report_news": [1, 2, 3]
+}
+```
+
 ## 数据表字段（schema.sql）
 ### news
 - `id` BIGINT PK 自增
