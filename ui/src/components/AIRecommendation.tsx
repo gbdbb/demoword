@@ -231,80 +231,85 @@ export default function AIRecommendation() {
           )}
           {!loadingDetail && detail && (
             <Space direction="vertical" size={16} style={{ width: '100%' }}>
-              <Card title="建议摘要" bordered={false} className="summary-card">
-                <Row gutter={[24, 16]}>
-                  <Col xs={24} sm={12}>
-                    <div className="summary-item">
-                      <span className="summary-label">报告编号</span>
-                      <span className="summary-value">#{detail.id}</span>
-                    </div>
-                    <div className="summary-item">
-                      <span className="summary-label">生成时间</span>
-                      <span className="summary-value">{detail.date}</span>
-                    </div>
-                  </Col>
-                  <Col xs={24} sm={12}>
-                    <div className="summary-item">
-                      <span className="summary-label">状态</span>
-                      <Tag color={statusColors[detail.status]}>{statusTexts[detail.status]}</Tag>
-                    </div>
-                    <div className="summary-item">
-                      <span className="summary-label">风险等级</span>
-                      <Tag icon={<WarningOutlined />} color={riskColors[detail.riskLevel]}>
-                        {riskTexts[detail.riskLevel]}
-                      </Tag>
-                    </div>
-                  </Col>
-                  <Col xs={24}>
-                    <div className="ai-judgment">
-                      <div className="summary-label">AI 总体判断</div>
-                      <Alert message={detail.aiJudgment} type="info" showIcon />
-                    </div>
-                  </Col>
-                </Row>
-              </Card>
-
-              <Card title="关联市场消息" bordered={false} className="news-card">
-                <List
-                  dataSource={detail.relatedNews}
-                  renderItem={(news) => (
-                    <List.Item
-                      key={news.id}
-                      className="news-item"
-                      actions={[
-                        <Button
-                          type="link"
-                          icon={<LinkOutlined />}
-                          href={news.source}
-                          target="_blank"
-                          key="link"
-                          className="news-source-btn"
+              <Row gutter={[16, 16]}>
+                <Col xs={24} lg={12}>
+                  <Card title="建议摘要" bordered={false} className="summary-card">
+                    <Row gutter={[24, 16]}>
+                      <Col xs={24} sm={12}>
+                        <div className="summary-item">
+                          <span className="summary-label">报告编号</span>
+                          <span className="summary-value">#{detail.id}</span>
+                        </div>
+                        <div className="summary-item">
+                          <span className="summary-label">生成时间</span>
+                          <span className="summary-value">{detail.date}</span>
+                        </div>
+                      </Col>
+                      <Col xs={24} sm={12}>
+                        <div className="summary-item">
+                          <span className="summary-label">状态</span>
+                          <Tag color={statusColors[detail.status]}>{statusTexts[detail.status]}</Tag>
+                        </div>
+                        <div className="summary-item">
+                          <span className="summary-label">风险等级</span>
+                          <Tag icon={<WarningOutlined />} color={riskColors[detail.riskLevel]}>
+                            {riskTexts[detail.riskLevel]}
+                          </Tag>
+                        </div>
+                      </Col>
+                      <Col xs={24}>
+                        <div className="ai-judgment">
+                          <div className="summary-label">AI 总体判断</div>
+                          <Alert message={detail.aiJudgment} type="info" showIcon />
+                        </div>
+                      </Col>
+                    </Row>
+                  </Card>
+                </Col>
+                <Col xs={24} lg={12}>
+                  <Card title="关联市场消息" bordered={false} className="news-card">
+                    <List
+                      dataSource={detail.relatedNews}
+                      renderItem={(news) => (
+                        <List.Item
+                          key={news.id}
+                          className="news-item"
+                          actions={[
+                            <Button
+                              type="link"
+                              icon={<LinkOutlined />}
+                              href={news.source}
+                              target="_blank"
+                              key="link"
+                              className="news-source-btn"
+                            >
+                              查看来源
+                            </Button>,
+                          ]}
                         >
-                          查看来源
-                        </Button>,
-                      ]}
-                    >
-                      <List.Item.Meta
-                        avatar={
-                          <div className={`news-sentiment-indicator ${news.sentiment}`} />
-                        }
-                        title={
-                          <Space>
-                            <Tag color="blue" className="news-coin-tag">{news.coin}</Tag>
-                            <Tag color={sentimentColors[news.sentiment]} className="news-sentiment-tag">
-                              {sentimentTexts[news.sentiment]}
-                            </Tag>
-                            <span className="news-time subtle-text">{news.time}</span>
-                          </Space>
-                        }
-                        description={
-                          <div className="news-summary">{news.summary}</div>
-                        }
-                      />
-                    </List.Item>
-                  )}
-                />
-              </Card>
+                          <List.Item.Meta
+                            avatar={
+                              <div className={`news-sentiment-indicator ${news.sentiment}`} />
+                            }
+                            title={
+                              <Space>
+                                <Tag color="blue" className="news-coin-tag">{news.coin}</Tag>
+                                <Tag color={sentimentColors[news.sentiment]} className="news-sentiment-tag">
+                                  {sentimentTexts[news.sentiment]}
+                                </Tag>
+                                <span className="news-time subtle-text">{news.time}</span>
+                              </Space>
+                            }
+                            description={
+                              <div className="news-summary">{news.summary}</div>
+                            }
+                          />
+                        </List.Item>
+                      )}
+                    />
+                  </Card>
+                </Col>
+              </Row>
 
               <Row gutter={[16, 16]}>
                 <Col xs={24} lg={12}>

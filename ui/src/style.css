@@ -417,6 +417,38 @@ body {
   border-bottom: 1px solid rgba(0, 0, 0, 0.06);
 }
 
+/* 为并排的卡片添加相匹配的高度 */
+.summary-card, .news-card {
+  height: 100%;
+  min-height: 400px;
+}
+
+.summary-card .ant-card-body, .news-card .ant-card-body {
+  height: calc(100% - 56px);
+  display: flex;
+  flex-direction: column;
+}
+
+/* 市场消息列表在卡片中的自适应布局 */
+.news-card .ant-list {
+  flex: 1;
+  overflow-y: auto;
+  padding-right: 8px;
+}
+
+.news-card .ant-list::-webkit-scrollbar {
+  width: 4px;
+}
+
+.news-card .ant-list::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.news-card .ant-list::-webkit-scrollbar-thumb {
+  background-color: rgba(0, 0, 0, 0.1);
+  border-radius: 2px;
+}
+
 .summary-item {
   display: flex;
   flex-direction: column;
@@ -654,6 +686,15 @@ body {
   
   .adjustment-card {
     min-height: 350px;
+  }
+  
+  /* 移动端卡片高度重置 */
+  .summary-card, .news-card {
+    min-height: auto;
+  }
+  
+  .summary-card .ant-card-body, .news-card .ant-card-body {
+    height: auto;
   }
   
   .action-buttons {
