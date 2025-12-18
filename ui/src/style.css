@@ -162,6 +162,23 @@ body {
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
+/* 新布局容器样式 */
+.report-content {
+  display: flex;
+  gap: 24px;
+  position: relative;
+}
+
+.main-content {
+  flex: 1;
+  min-width: 0; /* 防止flex子项溢出 */
+}
+
+.report-list-sidebar {
+  width: 320px;
+  flex-shrink: 0;
+}
+
 .page:hover {
   box-shadow: var(--card-hover-shadow);
 }
@@ -216,14 +233,17 @@ body {
 
 .ant-card-head {
   border-bottom: 1px solid rgba(0, 0, 0, 0.06);
-  min-height: auto;
+  min-height: 56px;
+  padding: 16px 24px;
+  display: flex;
+  align-items: center;
 }
 
 .ant-card-head-title {
   font-size: 16px;
   font-weight: 600;
   color: #1e293b;
-  padding: 16px 0;
+  padding: 0;
 }
 
 .ant-card-body {
@@ -236,6 +256,8 @@ body {
   overflow-y: auto;
   scrollbar-width: thin;
   scrollbar-color: rgba(0, 0, 0, 0.1) transparent;
+  position: sticky;
+  top: 0;
 }
 
 .report-list-card::-webkit-scrollbar {
@@ -575,12 +597,33 @@ body {
 }
 
 /* 响应式设计 */
+@media (max-width: 1200px) {
+  .report-list-sidebar {
+    width: 280px;
+  }
+}
+
 @media (max-width: 992px) {
   .app-content {
     margin: 12px;
   }
   .page {
     padding: 16px;
+  }
+  
+  .report-content {
+    flex-direction: column;
+  }
+  
+  .report-list-sidebar {
+    width: 100%;
+  }
+  
+  .report-list-card {
+    height: auto;
+    max-height: 400px;
+    position: relative;
+    top: 0;
   }
   
   .report-list-card .ant-list-item {
@@ -622,13 +665,6 @@ body {
   .reject-btn {
     width: 100%;
     max-width: 280px;
-  }
-  
-  /* 报告列表卡片在移动端的适配 */
-  .report-list-card {
-    height: auto;
-    max-height: 400px;
-    margin-bottom: 16px;
   }
   
   /* 卡片间距优化 */
@@ -781,6 +817,18 @@ body {
 .ant-descriptions-item-content {
   color: #1e293b;
 }
+
+/* 主内容区域卡片样式增强 */
+.main-content .ant-card {
+  margin-bottom: 16px;
+}
+
+.main-content .ant-card:first-child {
+  /* 移除margin-top，确保卡片与报告列表对齐 */
+}
+
+/* 确保新布局中所有元素对齐 */
+/* 已移除相关样式，因为已合并到全局.ant-card-head样式中 */
 
 /* 卡片标题美化 */
 .ant-card-head-title {

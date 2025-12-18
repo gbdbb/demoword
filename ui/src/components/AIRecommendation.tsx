@@ -217,56 +217,8 @@ export default function AIRecommendation() {
         </Typography.Text>
       </div>
 
-      <Row gutter={[16, 16]}>
-        <Col xs={24} lg={7}>
-          <Card 
-            title="报告列表" 
-            bordered={false} 
-            loading={loadingList}
-            className="report-list-card"
-            extra={
-              <Button type="link" size="small" onClick={loadReports}>
-                刷新
-              </Button>
-            }
-          >
-            <List
-              dataSource={reports}
-              renderItem={(report) => (
-                <List.Item
-                  key={report.id}
-                  onClick={() => {
-                    setSelectedReportId(report.id);
-                    loadDetail(report.id);
-                  }}
-                  className={selectedReportId === report.id ? 'report-item active' : 'report-item'}
-                >
-                  <List.Item.Meta
-                    avatar={
-                      <div className={`report-status-indicator ${report.status}`} />
-                    }
-                    title={
-                      <Space>
-                        <span className="report-id">#{report.id}</span>
-                        <Tag color={statusColors[report.status]}>{statusTexts[report.status]}</Tag>
-                      </Space>
-                    }
-                    description={
-                      <div>
-                        <div className="report-date">{report.date}</div>
-                        {report.status === 'pending' && (
-                          <Tag size="small" color="blue">待处理</Tag>
-                        )}
-                      </div>
-                    }
-                  />
-                </List.Item>
-              )}
-            />
-          </Card>
-        </Col>
-
-        <Col xs={24} lg={17}>
+      <div className="report-content">
+        <div className="main-content">
           {loadingDetail && (
             <Card bordered={false} className="detail-loading-card">
               <div className="loading-container">
@@ -436,8 +388,56 @@ export default function AIRecommendation() {
               )}
             </Space>
           )}
-        </Col>
-      </Row>
+        </div>
+        
+        <div className="report-list-sidebar">
+          <Card 
+            title="报告列表" 
+            bordered={false} 
+            loading={loadingList}
+            className="report-list-card"
+            extra={
+              <Button type="link" size="small" onClick={loadReports}>
+                刷新
+              </Button>
+            }
+          >
+            <List
+              dataSource={reports}
+              renderItem={(report) => (
+                <List.Item
+                  key={report.id}
+                  onClick={() => {
+                    setSelectedReportId(report.id);
+                    loadDetail(report.id);
+                  }}
+                  className={selectedReportId === report.id ? 'report-item active' : 'report-item'}
+                >
+                  <List.Item.Meta
+                    avatar={
+                      <div className={`report-status-indicator ${report.status}`} />
+                    }
+                    title={
+                      <Space>
+                        <span className="report-id">#{report.id}</span>
+                        <Tag color={statusColors[report.status]}>{statusTexts[report.status]}</Tag>
+                      </Space>
+                    }
+                    description={
+                      <div>
+                        <div className="report-date">{report.date}</div>
+                        {report.status === 'pending' && (
+                          <Tag size="small" color="blue">待处理</Tag>
+                        )}
+                      </div>
+                    }
+                  />
+                </List.Item>
+              )}
+            />
+          </Card>
+        </div>
+      </div>
 
       <Modal
         title="驳回原因"
