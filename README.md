@@ -1,5 +1,5 @@
-﻿# Dify 接入与数据表说明
-> 加密货币AI投资分析系统 - Dify集成与核心接口、数据表使用指南
+﻿# AI 驱动数字货币投资系统
+> Dify集成与核心接口、数据表使用指南
 
 ## 快速上手
 ### 1. 数据库初始化
@@ -7,14 +7,22 @@
 
 ### 2. 启动后端服务
 ```bash
-cd backend && mvn spring-boot:run
+cd backend # 进入后端项目根目录
+mvn spring-boot:run
 ```
 服务默认运行在 **8080** 端口，启动后即可调用API接口。
 
-### 3. 核心API速览
+### 3. 启动前端服务
+```bash
+cd ui  # 进入前端项目根目录
+npm install  # 首次启动需执行安装依赖
+npm run dev  # 启动开发服务器
+```
+
+### 4. 核心API速览
 | 接口类型       | 接口地址                          | 功能描述                     |
 |----------------|-----------------------------------|------------------------------|
-| 核心入库       | `POST /api/news/ingest`           | 单条新闻入库（Dify对接）|
+| 核心入库       | `POST /api/news/ingest`           | 单条新闻入库                 |
 | 批量入库       | `POST /api/news/ingest/batch`     | 批量新闻入库                 |
 | 新闻查询       | `GET /api/news`                   | 获取新闻列表                 |
 | 标记已读       | `POST /api/news/{id}/read`        | 标记单条新闻为已读           |
@@ -38,9 +46,9 @@ cd backend && mvn spring-boot:run
 |--------------|--------|------|----------------------------------------------------------------------|
 | title        | String | 是   | 新闻标题                                                             |
 | summary      | String | 是   | 新闻摘要                                                             |
-| coin         | String | 否   | 关联币种，仅支持 BTC/ETH/SOL/USDT（大小写均可）|
-| sentiment    | String | 否   | 市场情绪，仅支持 BULLISH/BEARISH/NEUTRAL（大小写均可）|
-| sourceUrl    | String | 否   | 新闻来源URL，默认值：`https://example.com/`                          |
+| coin         | String | 否   | 关联币种，仅支持 BTC/ETH/SOL/USDT（大小写均可）                       |
+| sentiment    | String | 否   | 市场情绪，仅支持 BULLISH/BEARISH/NEUTRAL（大小写均可）                |
+| sourceUrl    | String | 否   | 新闻来源URL                                                         |
 | publishedAt  | String | 否   | 发布时间，格式 `yyyy-MM-dd HH:mm`，缺省为当前系统时间                |
 
 - **响应示例**：
