@@ -7,6 +7,9 @@ import com.example.backend.dto.BatchReportsResponse;
 import com.example.backend.dto.ReportDetailDto;
 import com.example.backend.dto.ReportSummaryDto;
 import com.example.backend.dto.ReviewRequest;
+import com.example.backend.model.Role;
+import com.example.backend.model.User;
+import com.example.backend.repository.UserRepository;
 import com.example.backend.service.ReportService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.validation.Valid;
@@ -27,6 +30,7 @@ import java.util.Map;
 @Slf4j
 public class ReportController {
     private final ReportService reportService;
+    private final UserRepository userRepository;
 
     @GetMapping
     public List<ReportSummaryDto> listReports() {
@@ -38,20 +42,46 @@ public class ReportController {
         return reportService.getReportDetail(id);
     }
 
+    // 辅助方法：检查用户是否为管理员
+    private boolean isAdmin(@RequestHeader(value = "X-Username", required = false) String username) {
+        if (username == null) {
+            return false;
+        }
+        User user = userRepository.findByUsername(username);
+        if (user == null) {
+            return false;
+        }
+        return user.getRoles().stream()
+                .anyMatch(role -> role.getRoleCode().equals(Role.ADMIN));
+    }
+
     @PostMapping("/{id}/approve")
-    public ResponseEntity<Map<String, String>> approve(@PathVariable Long id) {
+    public ResponseEntity<Map<String, String>> approve(@PathVariable Long id, 
+            @RequestHeader(value = "X-Username", required = false) String username) {
+        if (!isAdmin(username)) {
+            return ResponseEntity.status(403).body(Map.of("error", "权限不足，需要管理员权限"));
+        }
         reportService.approve(id);
         return ResponseEntity.ok(Map.of("status", "approved"));
     }
 
     @PostMapping("/{id}/reject")
-    public ResponseEntity<Map<String, String>> reject(@PathVariable Long id, @Valid @RequestBody ReviewRequest request) {
+    public ResponseEntity<Map<String, String>> reject(@PathVariable Long id, 
+            @Valid @RequestBody ReviewRequest request, 
+            @RequestHeader(value = "X-Username", required = false) String username) {
+        if (!isAdmin(username)) {
+            return ResponseEntity.status(403).body(Map.of("error", "权限不足，需要管理员权限"));
+        }
         reportService.reject(id, request.getReason());
         return ResponseEntity.ok(Map.of("status", "rejected"));
     }
     
     @PostMapping("/{id}/undo")
-    public ResponseEntity<Map<String, String>> undo(@PathVariable Long id) {
+    public ResponseEntity<Map<String, String>> undo(@PathVariable Long id, 
+            @RequestHeader(value = "X-Username", required = false) String username) {
+        if (!isAdmin(username)) {
+            return ResponseEntity.status(403).body(Map.of("error", "权限不足，需要管理员权限"));
+        }
         reportService.undo(id);
         return ResponseEntity.ok(Map.of("status", "pending"));
     }

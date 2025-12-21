@@ -26,7 +26,7 @@ import {
 } from '@ant-design/icons';
 import type { ColumnsType } from 'antd/es/table';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
-import { api, type ReportDetail, type ReportSummary, type ProposedChange, type ExchangeRatesResponse, COIN_GECKO_ID_MAP } from '../api';
+import { api, type ReportDetail, type ReportSummary, type ProposedChange, type ExchangeRatesResponse, COIN_GECKO_ID_MAP, getAuthState } from '../api';
 
 const { TextArea } = Input;
 
@@ -540,7 +540,8 @@ export default function AIRecommendation() {
                       </Typography.Text>
                     </div>
                     <div className="action-buttons">
-                      {detail.status === 'pending' && (
+                      {/* 检查用户是否是管理员 */}
+                      {getAuthState().user?.isAdmin && detail.status === 'pending' && (
                         <>
                           <Button
                             size="large"
@@ -561,7 +562,7 @@ export default function AIRecommendation() {
                           </Button>
                         </>
                       )}
-                      {detail.status === 'approved' && (
+                      {getAuthState().user?.isAdmin && detail.status === 'approved' && (
                         <Button
                           size="large"
                           icon={<WarningOutlined />}
@@ -571,6 +572,16 @@ export default function AIRecommendation() {
                         >
                           撤销建议
                         </Button>
+                      )}
+                      {/* 普通用户显示提示信息 */}
+                      {!getAuthState().user?.isAdmin && (
+                        <Alert
+                          message="权限不足"
+                          description="您是普通用户，没有权限执行此操作"
+                          type="info"
+                          showIcon
+                          style={{ marginLeft: '16px' }}
+                        />
                       )}
                     </div>
                   </div>

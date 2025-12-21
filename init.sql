@@ -12,6 +12,9 @@ USE ai;
 SET FOREIGN_KEY_CHECKS = 0;
 
 -- 创建表结构
+DROP TABLE IF EXISTS user_role;
+DROP TABLE IF EXISTS role;
+DROP TABLE IF EXISTS user;
 DROP TABLE IF EXISTS report_news;
 DROP TABLE IF EXISTS report_change;
 DROP TABLE IF EXISTS report;
@@ -30,6 +33,43 @@ CREATE TABLE news (
     published_at DATETIME,
     is_read TINYINT(1) DEFAULT 0 COMMENT '0=未读,1=已读',
     PRIMARY KEY (id)
+) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci;
+
+-- user表 - 存储用户信息
+CREATE TABLE user (
+    id BIGINT NOT NULL AUTO_INCREMENT,
+    username VARCHAR(50) NOT NULL COMMENT '用户名',
+    password VARCHAR(100) NOT NULL COMMENT '密码',
+    real_name VARCHAR(50) COMMENT '真实姓名',
+    email VARCHAR(100) COMMENT '邮箱',
+    status TINYINT(1) DEFAULT 1 COMMENT '状态：1=启用,0=禁用',
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+    PRIMARY KEY (id),
+    UNIQUE INDEX idx_username (username)
+) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci;
+
+-- role表 - 存储角色信息
+CREATE TABLE role (
+    id BIGINT NOT NULL AUTO_INCREMENT,
+    role_name VARCHAR(50) NOT NULL COMMENT '角色名称',
+    role_code VARCHAR(50) NOT NULL COMMENT '角色代码：REGULAR_VIEWER=普通查看员,ADMIN=管理员',
+    description TEXT COMMENT '角色描述',
+    PRIMARY KEY (id),
+    UNIQUE INDEX idx_role_code (role_code)
+) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci;
+
+-- user_role表 - 存储用户角色关联
+CREATE TABLE user_role (
+    id BIGINT NOT NULL AUTO_INCREMENT,
+    user_id BIGINT NOT NULL COMMENT '用户ID',
+    role_id BIGINT NOT NULL COMMENT '角色ID',
+    PRIMARY KEY (id),
+    UNIQUE INDEX idx_user_role (user_id, role_id),
+    INDEX idx_user_id (user_id),
+    INDEX idx_role_id (role_id),
+    CONSTRAINT fk_user_role_user FOREIGN KEY (user_id) REFERENCES user (id) ON DELETE NO ACTION ON UPDATE NO ACTION,
+    CONSTRAINT fk_user_role_role FOREIGN KEY (role_id) REFERENCES role (id) ON DELETE NO ACTION ON UPDATE NO ACTION
 ) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci;
 
 -- portfolio表 - 存储投资组合
@@ -120,9 +160,9 @@ INSERT INTO portfolio_history (snap_date, coin, percentage) VALUES
 ('2025-12-22', 'BTC', 63.08), ('2025-12-22', 'ETH', 12.78), ('2025-12-22', 'SOL', 17.86), ('2025-12-22', 'USDT', 6.28);
 
 INSERT INTO report (generated_at, status, ai_judgment, risk_level, review_remark) VALUES 
-('2024-12-16 09:00:00', 'PENDING', 'BTC机构增持与波动率并存，ETH质押与L2双利好，SOL生态增长但需警惕技术风险，USDT需求旺盛维持储备，整体持仓保持不变。', 'MEDIUM', NULL),
+('2024-12-14 09:00:00', 'PENDING', 'BTC机构增持与波动率并存，ETH质押与L2双利好，SOL生态增长但需警惕技术风险，USDT需求旺盛维持储备，整体持仓保持不变。', 'MEDIUM', NULL),
 ('2024-12-15 09:00:00', 'PENDING', 'SOL生态爆发式增长，建议小幅增持；ETH L2与质押双利好，维持持仓；BTC暂观机构动向。', 'MEDIUM', NULL),
-('2024-12-14 09:00:00', 'PENDING', '美联储降息预期升温（新闻3），USDT需求上涨（新闻6），建议小幅增加稳定币储备；BTC、ETH暂无明确信号，维持持仓。', 'LOW', NULL);
+('2024-12-16 09:00:00', 'PENDING', '美联储降息预期升温（新闻3），USDT需求上涨（新闻6），建议小幅增加稳定币储备；BTC、ETH暂无明确信号，维持持仓。', 'LOW', NULL);
 
 INSERT INTO report_change (coin, current_amount, proposed_amount, change_pct, reason, report_id) VALUES 
 ('BTC', 2.5000, 2.5000, 0.00, 'MicroStrategy增持BTC（新闻1）带来机构支撑，但期货未平仓合约新高（新闻7）增加波动率，暂维持持仓', 1),
@@ -140,6 +180,22 @@ INSERT INTO report_news (news_id, report_id) VALUES
 (1, 1), (2, 1), (3, 1), (4, 1), (5, 1), (6, 1), (7, 1), (8, 1),
 (1, 2), (2, 2), (4, 2), (8, 2),
 (3, 3), (6, 3);
+
+-- 插入用户权限初始数据
+-- 角色数据
+INSERT INTO role (role_name, role_code, description) VALUES 
+('普通查看员', 'REGULAR_VIEWER', '只能查看数据，不能进行审核操作'),
+('管理员', 'ADMIN', '可以查看数据并审核操作建议');
+
+-- 用户数据 (密码使用简单的MD5哈希，实际项目中应使用更安全的加密方式)
+INSERT INTO user (username, password, real_name, email) VALUES 
+('demo', '123456', 'demo', 'demo@example.com'),
+('admin', '123456', 'admin', 'admin@example.com');
+
+-- 用户角色关联
+INSERT INTO user_role (user_id, role_id) VALUES 
+(1, 1), -- 普通用户分配普通查看员角色
+(2, 2); -- 管理员分配管理员角色
 
 -- 恢复外键检查
 SET FOREIGN_KEY_CHECKS = 1;

@@ -78,6 +78,7 @@ export default function MarketNews() {
       title: '消息摘要',
       dataIndex: 'summary',
       key: 'summary',
+      width: 440,
       ellipsis: true,
     },
     {
@@ -168,8 +169,8 @@ export default function MarketNews() {
           dataSource={pageData.content}
           rowKey="id"
           loading={loading}
-          tableLayout="auto"
-          scroll={{ x: 'max-content' }}
+          tableLayout="fixed"
+          scroll={{ x: 1000 }}
           pagination={{
             current: pageData.page + 1,
             pageSize: pageData.size,

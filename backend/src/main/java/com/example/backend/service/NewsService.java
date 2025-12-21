@@ -29,7 +29,7 @@ import java.util.Set;
 @RequiredArgsConstructor
 public class NewsService {
     private final NewsRepository newsRepository;
-    private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+    private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
     private static final Set<String> ALLOWED_COINS = Set.of("BTC", "ETH", "SOL", "USDT");
 
     public PagedResponse<NewsDto> queryNews(String coin, String sentiment, int page, int size) {

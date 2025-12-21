@@ -16,6 +16,8 @@ import {
   CartesianGrid,
 } from 'recharts';
 import { api, type Holding, type PortfolioResponse, type ExchangeRatesResponse, COIN_GECKO_ID_MAP } from '../api';
+import * as XLSX from 'xlsx';
+import { saveAs } from 'file-saver';
 
 const { Option } = Select;
 
@@ -234,7 +236,48 @@ export default function Portfolio() {
   );
 
   const handleExport = () => {
-    message.info('导出为 Excel 的功能在对接后端接口时接入');
+    try {
+      // 使用固定列名避免语法问题
+      const exportData = adjustedHoldings.map(item => {
+        return {
+          '币种': item.coin,
+          '数量': item.amount,
+          '占比': item.percentage.toFixed(2) + '%',
+          '市值': item.value.toFixed(2),
+          '货币单位': selectedCurrency.toUpperCase(),
+          '更新时间': new Date().toLocaleString('zh-CN')
+        };
+      });
+
+      // 创建工作簿和工作表
+      const ws = XLSX.utils.json_to_sheet(exportData);
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, '持仓数据');
+
+      // 调整列宽
+      const colWidths = [
+        { wch: 10 },  // 币种
+        { wch: 15 },  // 数量
+        { wch: 10 },  // 占比
+        { wch: 15 },  // 市值
+        { wch: 15 },  // 货币单位
+        { wch: 25 }   // 更新时间
+      ];
+      ws['!cols'] = colWidths;
+
+      // 生成Excel文件
+      const excelBuffer = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
+      const dataBlob = new Blob([excelBuffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+      
+      // 保存文件
+      const fileName = '持仓数据_' + new Date().toISOString().slice(0, 10) + '.xlsx';
+      saveAs(dataBlob, fileName);
+      
+      message.success('导出成功');
+    } catch (error) {
+      console.error('导出失败:', error);
+      message.error('导出失败');
+    }
   };
 
   return (
@@ -263,8 +306,8 @@ export default function Portfolio() {
 
       <Row gutter={[16, 16]}>
         <Col xs={24} lg={12}>
-          <Card title="当前持仓占比" bordered={false}>
-            <ResponsiveContainer width="100%" height={320}>
+          <Card title="当前资产配置比例" bordered={false} className="portfolio-chart-card">
+            <ResponsiveContainer width="100%" height="100%">
               <PieChart>
                 <Pie
                   data={pieData}
@@ -310,8 +353,8 @@ export default function Portfolio() {
         </Col>
 
         <Col xs={24} lg={12}>
-          <Card title="近 7 日持仓占比波动 (%)" bordered={false}>
-            <ResponsiveContainer width="100%" height={320}>
+          <Card title="近 7 日资产权重历史演化" bordered={false} className="portfolio-chart-card">
+            <ResponsiveContainer width="100%" height="100%">
               <LineChart 
                 data={useMemo(() => {
                   // 按日期排序

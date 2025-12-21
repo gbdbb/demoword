@@ -1,5 +1,51 @@
 export const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:8080/api';
 
+// 用户信息类型
+export type User = {
+  id: number;
+  username: string;
+  realName: string;
+  email: string;
+  isAdmin: boolean;
+};
+
+// 认证状态类型
+export type AuthState = {
+  user: User | null;
+  token?: string;
+};
+
+// 从localStorage获取保存的认证状态
+function loadAuthState(): AuthState {
+  try {
+    const saved = localStorage.getItem('authState');
+    if (saved) {
+      return JSON.parse(saved);
+    }
+  } catch (e) {
+    console.error('Failed to load auth state from localStorage:', e);
+  }
+  return { user: null };
+}
+
+// 存储当前认证状态
+let authState: AuthState = loadAuthState();
+
+// 设置认证状态
+export function setAuthState(state: AuthState) {
+  authState = state;
+  try {
+    localStorage.setItem('authState', JSON.stringify(state));
+  } catch (e) {
+    console.error('Failed to save auth state to localStorage:', e);
+  }
+}
+
+// 获取当前认证状态
+export function getAuthState(): AuthState {
+  return authState;
+}
+
 export type NewsItem = {
   id: number;
   time: string;
@@ -108,17 +154,42 @@ function convertStringsToNumbers(obj: any): any {
 }
 
 async function request<T>(url: string, options?: RequestInit): Promise<T> {
-  const res = await fetch(url, options);
+  // 添加认证信息到请求头
+  const headers = new Headers(options?.headers);
+  if (authState.user) {
+    headers.set('X-Username', authState.user.username);
+  }
+  
+  const res = await fetch(url, {
+    ...options,
+    headers,
+  });
+  
   if (!res.ok) {
     const text = await res.text();
     throw new Error(text || res.statusText);
   }
+  
   const data = await res.json();
   // 转换所有字符串形式的数字为number类型
   return convertStringsToNumbers(data) as T;
 }
 
 export const api = {
+  // 认证相关方法
+  login: (username: string, password: string) => 
+    request<{ success: boolean; user?: User; message?: string }>(`${API_BASE}/auth/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username, password }),
+    }),
+    
+  logout: () => 
+    request<{ success: boolean }>(`${API_BASE}/auth/logout`, {
+      method: 'POST',
+    }),
+  
+  // 其他API方法
   getMetrics: () => request<MetricsResponse>(`${API_BASE}/metrics`),
   getNews: (params: { coin: string; sentiment: string; page: number; size: number }) => {
     const search = new URLSearchParams({
