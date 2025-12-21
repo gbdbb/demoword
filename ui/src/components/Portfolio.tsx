@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Card, Row, Col, Table, Button, Typography, message, Tag } from 'antd';
+import { Card, Row, Col, Table, Button, Typography, message, Tag, Select } from 'antd';
 import { DownloadOutlined, ArrowUpOutlined, ArrowDownOutlined } from '@ant-design/icons';
 import type { ColumnsType } from 'antd/es/table';
 import {
@@ -14,44 +14,22 @@ import {
   XAxis,
   YAxis,
   CartesianGrid,
-  Area,
-  AreaChart,
-  BarChart,
-  Bar,
 } from 'recharts';
-import { api, type Holding, type PortfolioResponse } from '../api';
+import { api, type Holding, type PortfolioResponse, type ExchangeRatesResponse, COIN_GECKO_ID_MAP } from '../api';
+
+const { Option } = Select;
 
 // 现代化配色方案
 const COLORS = ['#165dff', '#00b42a', '#ff7d00', '#13c2c2', '#722ed1', '#eb2f96'];
 
-// 自定义饼图标签
-const renderCustomizedLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, percent, name }: any) => {
-  const radius = innerRadius + (outerRadius - innerRadius) * 0.5;
-  const x = cx + radius * Math.cos(-midAngle * (Math.PI / 180));
-  const y = cy + radius * Math.sin(-midAngle * (Math.PI / 180));
 
-  return (
-    <text x={x} y={y} fill="white" textAnchor={x > cx ? 'start' : 'end'} dominantBaseline="central">
-      {`${name} ${(percent * 100).toFixed(1)}%`}
-    </text>
-  );
-};
-
-// 自定义Tooltip
-const CustomTooltip = ({ active, payload }: any) => {
-  if (active && payload && payload.length) {
-    return (
-      <div className="custom-tooltip" style={{ backgroundColor: 'rgba(255, 255, 255, 0.95)', padding: '10px 15px', borderRadius: '8px', boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)' }}>
-        <p className="label" style={{ margin: 0, fontWeight: 'bold', color: payload[0].color }}>{`${payload[0].name}: ${payload[0].value}%`}</p>
-      </div>
-    );
-  }
-  return null;
-};
 
 export default function Portfolio() {
   const [data, setData] = useState<PortfolioResponse>({ holdings: [], history: [] });
   const [loading, setLoading] = useState(false);
+  const [exchangeRates, setExchangeRates] = useState<ExchangeRatesResponse | null>(null);
+  const [selectedCurrency, setSelectedCurrency] = useState<'usd' | 'cny'>('usd');
+  const [ratesLoading, setRatesLoading] = useState(false);
 
   useEffect(() => {
     setLoading(true);
@@ -65,17 +43,56 @@ export default function Portfolio() {
       .finally(() => setLoading(false));
   }, []);
 
-  // 模拟价格变化数据，实际项目中可以从API获取
-  const [priceChanges, setPriceChanges] = useState<Record<string, number>>({});
-  
+  // 获取汇率数据（带缓存）
+  const fetchExchangeRates = async (forceRefresh = false) => {
+    setRatesLoading(true);
+    try {
+      // 检查localStorage是否有缓存的汇率数据
+      const cachedRates = localStorage.getItem('exchangeRates');
+      const cachedRatesTimestamp = localStorage.getItem('exchangeRatesTimestamp');
+      const now = Date.now();
+      const CACHE_DURATION = 5 * 60 * 1000; // 5分钟缓存
+
+      // 如果不是强制刷新且有缓存且未过期，则使用缓存数据
+      if (!forceRefresh && cachedRates && cachedRatesTimestamp && now - parseInt(cachedRatesTimestamp) < CACHE_DURATION) {
+        setExchangeRates(JSON.parse(cachedRates));
+        return;
+      }
+
+      // 强制刷新或没有缓存或已过期，请求新数据
+      const newRates = await api.getExchangeRates();
+      setExchangeRates(newRates);
+      
+      // 缓存新数据
+      localStorage.setItem('exchangeRates', JSON.stringify(newRates));
+      localStorage.setItem('exchangeRatesTimestamp', now.toString());
+    } catch (err) {
+      console.error('获取汇率数据失败:', err);
+      message.error('获取实时汇率失败，使用默认汇率');
+    } finally {
+      setRatesLoading(false);
+    }
+  };
+
+  // 初始加载汇率数据
   useEffect(() => {
-    // 模拟价格变化数据
-    const mockChanges: Record<string, number> = {};
-    data.holdings.forEach(holding => {
-      mockChanges[holding.coin] = (Math.random() - 0.5) * 10; // -5% 到 5% 的随机变化
-    });
-    setPriceChanges(mockChanges);
-  }, [data.holdings]);
+    fetchExchangeRates();
+  }, []);
+
+  // 从汇率数据中获取真实的24h变化数据
+  const get24hChange = (coin: string): number => {
+    if (!exchangeRates) return 0;
+    const coinId = COIN_GECKO_ID_MAP[coin];
+    if (!coinId || !exchangeRates[coinId as keyof ExchangeRatesResponse]) {
+      return 0;
+    }
+    return exchangeRates[coinId as keyof ExchangeRatesResponse].usd_24h_change || 0;
+  };
+
+  // 获取货币符号
+  const getCurrencySymbol = (currency: 'usd' | 'cny') => {
+    return currency === 'usd' ? '$' : '¥';
+  };
 
   const columns: ColumnsType<Holding> = [
     {
@@ -90,7 +107,7 @@ export default function Portfolio() {
               width: '32px',
               height: '32px',
               borderRadius: '8px',
-              backgroundColor: COLORS[data.holdings.findIndex(h => h.coin === coin) % COLORS.length],
+              backgroundColor: COLORS[adjustedHoldings.findIndex(h => h.coin === coin) % COLORS.length],
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
@@ -121,7 +138,7 @@ export default function Portfolio() {
       key: 'change',
       width: 120,
       render: (_: any, record: Holding) => {
-        const change = priceChanges[record.coin] || 0;
+        const change = get24hChange(record.coin);
         return (
           <Tag 
             icon={change >= 0 ? <ArrowUpOutlined /> : <ArrowDownOutlined />}
@@ -162,28 +179,58 @@ export default function Portfolio() {
       ),
     },
     {
-      title: '当前市值 (USDT)',
+      title: `当前市值 (${selectedCurrency.toUpperCase()})`,
       dataIndex: 'value',
       key: 'value',
       render: (value: number) => (
         <Typography.Text strong style={{ fontSize: '15px', color: '#1e293b' }}>
-          ${value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+          {getCurrencySymbol(selectedCurrency)}{value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
         </Typography.Text>
       ),
     },
   ];
 
+  // 根据实时汇率计算持仓市值和占比
+  const adjustedHoldings = useMemo(() => {
+    if (!exchangeRates) return data.holdings;
+
+    // 先计算所有持仓的总市值
+    const adjustedValues = data.holdings.map((holding) => {
+      const coinId = COIN_GECKO_ID_MAP[holding.coin];
+      if (!coinId || !exchangeRates[coinId as keyof ExchangeRatesResponse]) {
+        return holding.value || 0;
+      }
+      const coinPrice = exchangeRates[coinId as keyof ExchangeRatesResponse];
+      const rate = coinPrice[selectedCurrency];
+      return holding.amount * rate;
+    });
+    
+    const total = adjustedValues.reduce((sum, value) => sum + value, 0);
+
+    // 重新计算每个持仓的占比
+    return data.holdings.map((holding, index) => {
+      let adjustedValue = adjustedValues[index];
+      
+      return {
+        ...holding,
+        value: adjustedValue,
+        percentage: total > 0 ? (adjustedValue / total) * 100 : 0
+      };
+    });
+  }, [data.holdings, exchangeRates, selectedCurrency]);
+
   const totalValue = useMemo(
-    () => data.holdings.reduce((sum, item) => sum + (item.value || 0), 0),
-    [data.holdings],
+    () => adjustedHoldings.reduce((sum, item) => sum + (item.value || 0), 0),
+    [adjustedHoldings],
   );
+
   const pieData = useMemo(
     () =>
-      data.holdings.map((item) => ({
+      adjustedHoldings.map((item) => ({
         name: item.coin,
         percentage: item.percentage,
       })),
-    [data.holdings],
+    [adjustedHoldings],
   );
 
   const handleExport = () => {
@@ -193,12 +240,25 @@ export default function Portfolio() {
   return (
     <div className="page">
       <div className="page-header">
-        <Typography.Title level={3} className="page-title">
-          持仓数据
-        </Typography.Title>
-        <Typography.Text type="secondary">
-          资产结构与持仓波动概览，支持快速导出与复核
-        </Typography.Text>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
+          <div>
+            <Typography.Title level={3} className="page-title">
+              持仓数据
+            </Typography.Title>
+            <Typography.Text type="secondary">
+              资产结构与持仓波动概览，支持快速导出与复核
+            </Typography.Text>
+          </div>
+          <Select
+            value={selectedCurrency}
+            onChange={setSelectedCurrency}
+            style={{ width: 120 }}
+            loading={ratesLoading}
+          >
+            <Option value="usd">美元 (USD)</Option>
+            <Option value="cny">人民币 (CNY)</Option>
+          </Select>
+        </div>
       </div>
 
       <Row gutter={[16, 16]}>
@@ -231,7 +291,7 @@ export default function Portfolio() {
                     />
                   ))}
                 </Pie>
-                <Tooltip formatter={(value) => `${value}%`} />
+                <Tooltip formatter={(value: number | string) => `${parseFloat(String(value)).toFixed(1)}%`} />
                 <Legend 
                   layout="horizontal" 
                   verticalAlign="bottom" 
@@ -243,16 +303,26 @@ export default function Portfolio() {
             </ResponsiveContainer>
             <div className="chart-footer" style={{ marginTop: '20px' }}>
               <Typography.Text strong style={{ fontSize: '16px', color: '#1e293b' }}>
-                总估值 ${totalValue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                总估值 {getCurrencySymbol(selectedCurrency)}{totalValue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} {selectedCurrency.toUpperCase()}
               </Typography.Text>
             </div>
           </Card>
         </Col>
 
         <Col xs={24} lg={12}>
-          <Card title="近 7 日持仓波动 (%)" bordered={false}>
+          <Card title="近 7 日持仓占比波动 (%)" bordered={false}>
             <ResponsiveContainer width="100%" height={320}>
-              <LineChart data={data.history} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
+              <LineChart 
+                data={useMemo(() => {
+                  // 按日期排序
+                  const sortedHistory = [...data.history].sort((a, b) => {
+                    return new Date(a.date as string).getTime() - new Date(b.date as string).getTime();
+                  });
+                  // 只显示最近7天的数据
+                  return sortedHistory.slice(-7);
+                }, [data.history])} 
+                margin={{ top: 10, right: 30, left: 0, bottom: 0 }}
+              >
                 <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
                 <XAxis 
                   dataKey="date" 
@@ -336,7 +406,7 @@ export default function Portfolio() {
           >
             <Table
               columns={columns}
-              dataSource={data.holdings}
+              dataSource={adjustedHoldings}
               rowKey="coin"
               loading={loading}
               pagination={false}
@@ -351,7 +421,7 @@ export default function Portfolio() {
                       <strong>100%</strong>
                     </Table.Summary.Cell>
                     <Table.Summary.Cell index={3}>
-                      <strong>{totalValue.toLocaleString()} USDT</strong>
+                      <strong>{getCurrencySymbol(selectedCurrency)}{totalValue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} {selectedCurrency.toUpperCase()}</strong>
                     </Table.Summary.Cell>
                   </Table.Summary.Row>
                 </Table.Summary>

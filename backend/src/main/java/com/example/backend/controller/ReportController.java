@@ -49,6 +49,12 @@ public class ReportController {
         reportService.reject(id, request.getReason());
         return ResponseEntity.ok(Map.of("status", "rejected"));
     }
+    
+    @PostMapping("/{id}/undo")
+    public ResponseEntity<Map<String, String>> undo(@PathVariable Long id) {
+        reportService.undo(id);
+        return ResponseEntity.ok(Map.of("status", "pending"));
+    }
 
     /**
      * 测试端点

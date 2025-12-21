@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import {
   Card,
   List,
@@ -11,11 +11,13 @@ import {
   Input,
   Alert,
   Space,
-  Descriptions,
   Typography,
   message,
   Spin,
+  Select,
 } from 'antd';
+
+const { Option } = Select;
 import {
   CheckCircleOutlined,
   CloseCircleOutlined,
@@ -23,8 +25,8 @@ import {
   LinkOutlined,
 } from '@ant-design/icons';
 import type { ColumnsType } from 'antd/es/table';
-import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip, Text } from 'recharts';
-import { api, type ReportDetail, type ReportSummary, type ProposedChange } from '../api';
+import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
+import { api, type ReportDetail, type ReportSummary, type ProposedChange, type ExchangeRatesResponse, COIN_GECKO_ID_MAP } from '../api';
 
 const { TextArea } = Input;
 
@@ -74,18 +76,55 @@ export default function AIRecommendation() {
   const [rejectReason, setRejectReason] = useState('');
   const [loadingList, setLoadingList] = useState(false);
   const [loadingDetail, setLoadingDetail] = useState(false);
+  const [exchangeRates, setExchangeRates] = useState<ExchangeRatesResponse | null>(null);
+  const [selectedCurrency, setSelectedCurrency] = useState<'usd' | 'cny'>('usd');
+  const [ratesLoading, setRatesLoading] = useState(false);
 
-  const pieData = detail
-    ? detail.currentHoldings.map((item) => ({
-        name: item.coin,
-        percentage: item.percentage,
-      }))
-    : [];
+  // 根据实时汇率计算调整后的持仓数据
+  const adjustedHoldings = useMemo(() => {
+    if (!detail || !exchangeRates) return detail?.currentHoldings || [];
+
+    // 先计算所有持仓的调整后价值
+    const adjustedValues = detail.currentHoldings.map((holding) => {
+      const coinId = COIN_GECKO_ID_MAP[holding.coin];
+      if (!coinId || !exchangeRates[coinId as keyof ExchangeRatesResponse]) {
+        return holding.value;
+      }
+
+      const coinPrice = exchangeRates[coinId as keyof ExchangeRatesResponse];
+      const rate = coinPrice[selectedCurrency];
+      return holding.amount * rate;
+    });
+
+    // 计算总资产价值
+    const totalValue = adjustedValues.reduce((sum, value) => sum + value, 0);
+
+    // 重新计算每个持仓的占比
+    return detail.currentHoldings.map((holding, index) => {
+      const adjustedValue = adjustedValues[index];
+      const percentage = totalValue > 0 ? (adjustedValue / totalValue) * 100 : holding.percentage;
+
+      return {
+        ...holding,
+        value: adjustedValue,
+        percentage: percentage,
+      };
+    });
+  }, [detail, exchangeRates, selectedCurrency]);
+
+  const pieData = useMemo(
+    () => adjustedHoldings.map((item) => ({
+      name: item.coin,
+      percentage: item.percentage,
+    })),
+    [adjustedHoldings]
+  );
 
   // 计算总资产估值
-  const totalAssetValue = detail
-    ? detail.currentHoldings.reduce((sum, item) => sum + item.value, 0)
-    : 0;
+  const totalAssetValue = useMemo(
+    () => adjustedHoldings.reduce((sum, item) => sum + item.value, 0),
+    [adjustedHoldings],
+  );
 
   const loadReports = () => {
     setLoadingList(true);
@@ -123,6 +162,47 @@ export default function AIRecommendation() {
     loadReports();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // 获取汇率数据（带缓存）
+  const fetchExchangeRates = async (forceRefresh = false) => {
+    setRatesLoading(true);
+    try {
+      // 检查localStorage是否有缓存的汇率数据
+      const cachedRates = localStorage.getItem('exchangeRates');
+      const cachedRatesTimestamp = localStorage.getItem('exchangeRatesTimestamp');
+      const now = Date.now();
+      const CACHE_DURATION = 5 * 60 * 1000; // 5分钟缓存
+
+      // 如果不是强制刷新且有缓存且未过期，则使用缓存数据
+      if (!forceRefresh && cachedRates && cachedRatesTimestamp && now - parseInt(cachedRatesTimestamp) < CACHE_DURATION) {
+        setExchangeRates(JSON.parse(cachedRates));
+        return;
+      }
+
+      // 强制刷新或没有缓存或已过期，请求新数据
+      const newRates = await api.getExchangeRates();
+      setExchangeRates(newRates);
+      
+      // 缓存新数据
+      localStorage.setItem('exchangeRates', JSON.stringify(newRates));
+      localStorage.setItem('exchangeRatesTimestamp', now.toString());
+    } catch (err) {
+      console.error('获取汇率数据失败:', err);
+      message.error('获取实时汇率失败，使用默认汇率');
+    } finally {
+      setRatesLoading(false);
+    }
+  };
+
+  // 初始加载汇率数据
+  useEffect(() => {
+    fetchExchangeRates();
+  }, []);
+
+  // 获取货币符号
+  const getCurrencySymbol = (currency: 'usd' | 'cny') => {
+    return currency === 'usd' ? '$' : '¥';
+  };
 
   const adjustmentColumns: ColumnsType<ProposedChange> = [
     {
@@ -187,6 +267,28 @@ export default function AIRecommendation() {
     });
   };
 
+  const handleUndo = () => {
+    if (!detail) return;
+    Modal.confirm({
+      title: '确认撤销',
+      content: '确认要撤销此 AI 建议的通过状态并恢复原始持仓吗？',
+      okText: '确认撤销',
+      cancelText: '取消',
+      onOk: () => {
+        api
+          .undoReport(detail.id)
+          .then(() => {
+            message.success('已撤销该建议的通过状态，持仓已恢复');
+            loadReports();
+          })
+          .catch((err) => {
+            console.error(err);
+            message.error('操作失败，请稍后再试');
+          });
+      },
+    });
+  };
+
   const handleReject = () => {
     setRejectModalVisible(true);
   };
@@ -214,12 +316,25 @@ export default function AIRecommendation() {
   return (
     <div className="page">
       <div className="page-header">
-        <Typography.Title level={3} className="page-title">
-          AI 建议报告
-        </Typography.Title>
-        <Typography.Text type="secondary">
-          结合市场消息、持仓分布与风险提示的智能建议
-        </Typography.Text>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
+          <div>
+            <Typography.Title level={3} className="page-title">
+              AI 建议报告
+            </Typography.Title>
+            <Typography.Text type="secondary">
+              结合市场消息、持仓分布与风险提示的智能建议
+            </Typography.Text>
+          </div>
+          <Select
+            value={selectedCurrency}
+            onChange={setSelectedCurrency}
+            style={{ width: 120 }}
+            loading={ratesLoading}
+          >
+            <Option value="usd">美元 (USD)</Option>
+            <Option value="cny">人民币 (CNY)</Option>
+          </Select>
+        </div>
       </div>
 
       <div className="report-content">
@@ -364,7 +479,7 @@ export default function AIRecommendation() {
                           当前总资产估值
                         </div>
                         <div style={{ fontSize: '28px', fontWeight: '700', background: 'linear-gradient(135deg, #165dff, #22d3ee)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>
-                          ${totalAssetValue.toLocaleString()}
+                          {getCurrencySymbol(selectedCurrency)}{totalAssetValue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} {selectedCurrency.toUpperCase()}
                         </div>
                       </div>
                       <div style={{ marginLeft: 'auto', width: '50%', height: '100%' }}>
@@ -376,7 +491,7 @@ export default function AIRecommendation() {
                               cy="50%"
                               nameKey="name"
                               labelLine={false}
-                              label={({ name, value }) => `${name} ${value}%`}
+                              label={({ name, value }) => `${name} ${Number(value).toFixed(1)}%`}
                               outerRadius={70}
                               fill="#8884d8"
                               dataKey="percentage"
@@ -387,7 +502,7 @@ export default function AIRecommendation() {
                                 <Cell key={item.name} fill={COLORS[index % COLORS.length]} />
                               ))}
                             </Pie>
-                            <Tooltip formatter={(value) => `${value}%`} />
+                            <Tooltip formatter={(value) => `${Number(value).toFixed(1)}%`} />
                           </PieChart>
                         </ResponsiveContainer>
                       </div>
@@ -411,33 +526,52 @@ export default function AIRecommendation() {
                 )}
               </Row>
 
-              {detail.status === 'pending' && (
+              {(detail.status === 'pending' || detail.status === 'approved') && (
                 <Card bordered={false} className="action-card">
                   <div className="action-container">
                     <div className="action-info">
-                      <Typography.Title level={4}>操作建议</Typography.Title>
+                      <Typography.Title level={4}>
+                        {detail.status === 'pending' ? '操作建议' : '已通过操作'}
+                      </Typography.Title>
                       <Typography.Text type="secondary">
-                        请审核此AI建议报告，选择通过或驳回
+                        {detail.status === 'pending' 
+                          ? '请审核此AI建议报告，选择通过或驳回' 
+                          : '该建议已通过，您可以选择撤销该操作'}
                       </Typography.Text>
                     </div>
                     <div className="action-buttons">
-                      <Button
-                        size="large"
-                        icon={<CheckCircleOutlined />}
-                        onClick={handleApprove}
-                        className="approve-btn"
-                      >
-                        通过建议
-                      </Button>
-                      <Button
-                        danger
-                        size="large"
-                        icon={<CloseCircleOutlined />}
-                        onClick={handleReject}
-                        className="reject-btn"
-                      >
-                        驳回建议
-                      </Button>
+                      {detail.status === 'pending' && (
+                        <>
+                          <Button
+                            size="large"
+                            icon={<CheckCircleOutlined />}
+                            onClick={handleApprove}
+                            className="approve-btn"
+                          >
+                            通过建议
+                          </Button>
+                          <Button
+                            danger
+                            size="large"
+                            icon={<CloseCircleOutlined />}
+                            onClick={handleReject}
+                            className="reject-btn"
+                          >
+                            驳回建议
+                          </Button>
+                        </>
+                      )}
+                      {detail.status === 'approved' && (
+                        <Button
+                          size="large"
+                          icon={<WarningOutlined />}
+                          onClick={handleUndo}
+                          className="undo-btn"
+                          style={{ marginRight: '16px' }}
+                        >
+                          撤销建议
+                        </Button>
+                      )}
                     </div>
                   </div>
                 </Card>

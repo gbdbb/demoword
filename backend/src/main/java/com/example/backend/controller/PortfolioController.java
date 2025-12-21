@@ -2,9 +2,12 @@ package com.example.backend.controller;
 
 import com.example.backend.dto.PortfolioResponse;
 import com.example.backend.service.PortfolioService;
+import com.example.backend.service.PortfolioUpdateService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -14,9 +17,18 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 public class PortfolioController {
     private final PortfolioService portfolioService;
+    private final PortfolioUpdateService portfolioUpdateService;
 
     @GetMapping
     public PortfolioResponse getPortfolio() {
         return portfolioService.getPortfolio();
+    }
+
+    @PostMapping("/update")
+    public ResponseEntity<java.util.Map<String, String>> updatePortfolioValues() {
+        portfolioUpdateService.updatePortfolioValues();
+        java.util.Map<String, String> response = new java.util.HashMap<>();
+        response.put("message", "Portfolio values updated successfully");
+        return ResponseEntity.ok(response);
     }
 }
