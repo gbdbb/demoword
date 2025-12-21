@@ -511,8 +511,8 @@ body {
 
 /* 为并排的卡片添加相匹配的高度 */
 .summary-card, .news-card, .chart-card, .adjustment-card {
-  height: calc(33vh - 66px);
-  min-height: 267px;
+  height: calc(40vh - 120px);
+  min-height: 290px;
 }
 
 .summary-card .ant-card-body, .news-card .ant-card-body {
@@ -599,7 +599,7 @@ body {
   border-radius: 8px;
   transition: all 0.3s ease;
   border-bottom: 1px solid rgba(0, 0, 0, 0.05);
-  margin-bottom: 5px;
+  margin-bottom: 10px;
 }
 
 .news-item:hover {
@@ -654,8 +654,8 @@ body {
 
 /* 图表卡片 */
 .chart-card {
-  height: calc(33vh - 66px);
-  min-height: 267px;
+  height: calc(40vh - 66px);
+  min-height: 300px;
 }
 
 .chart-card .ant-card-head {
@@ -670,8 +670,8 @@ body {
 
 /* 调整建议卡片 */
 .adjustment-card {
-  height: calc(33vh - 66px);
-  min-height: 267px;
+  height: calc(40vh - 66px);
+  min-height: 300px;
 }
 
 .adjustment-card .ant-card-head {
